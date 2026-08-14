@@ -110,3 +110,20 @@ html, body {
   }
 }
 
+/* Continuous scroll: enters fully from the right, exits fully off the
+   left, then jumps back to the start — a one-way ticker rather than the
+   pause/bounce-back of the default mode. Only used while autohide is off. */
+#artist.scrolling-continuous,
+#track.scrolling-continuous {
+  animation: scroll-continuous 10s linear infinite;
+}
+
+@keyframes scroll-continuous {
+  from {
+    transform: translateX(var(--continuous-start));
+  }
+
+  to {
+    transform: translateX(var(--continuous-end));
+  }
+}

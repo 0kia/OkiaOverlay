@@ -133,6 +133,7 @@ h1 {
   cursor: pointer;
 }
 
+.option-row input[type="checkbox"]:disabled,
 .option-row input[type="color"]:disabled,
 .option-row select:disabled {
   opacity: 0.4;

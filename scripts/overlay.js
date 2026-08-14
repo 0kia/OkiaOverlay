@@ -12,6 +12,9 @@ const validTransitions = ['none', 'fade', 'bounce'];
 const transitionStyle = validTransitions.includes(params.get('transition'))
   ? params.get('transition')
   : 'fade'; // ?transition=none|fade|bounce
+// Only makes sense while the card stays on screen permanently, so it's
+// ignored if autohide is on (the UI also disables the checkbox in that case).
+const continuousScroll = params.get('continuous') === 'true' && !enableAutohide;
 
 const POLL_INTERVAL = 10000;
 const VISIBLE_DURATION = 7000;
@@ -80,15 +83,17 @@ function showNoSongPlaying() {
   trackEl.textContent = NO_SONG_TEXT;
   albumArtEl.style.display = 'none';
 
-  setupScrolling(artistEl);
-  setupScrolling(trackEl);
+  setupTextScrolling(artistEl);
+  setupTextScrolling(trackEl);
 
   showThenFade();
 }
 
 function resetScrolling(element) {
-  element.classList.remove('scrolling');
+  element.classList.remove('scrolling', 'scrolling-continuous');
   element.style.removeProperty('--scroll-distance');
+  element.style.removeProperty('--continuous-start');
+  element.style.removeProperty('--continuous-end');
 }
 
 function setupScrolling(element) {
@@ -102,6 +107,31 @@ function setupScrolling(element) {
       element.classList.add('scrolling');
     }
   });
+}
+
+function setupContinuousScrolling(element) {
+  resetScrolling(element);
+
+  requestAnimationFrame(() => {
+    // Starts fully off the right edge of the text area (element.clientWidth,
+    // since the element's own box stays at its set width even though the
+    // overflowing text paints past it) and ends fully off the left edge
+    // (-element.scrollWidth), then jumps back to the start and repeats.
+    const windowWidth = element.clientWidth;
+    const contentWidth = element.scrollWidth;
+
+    element.style.setProperty('--continuous-start', `${windowWidth}px`);
+    element.style.setProperty('--continuous-end', `-${contentWidth}px`);
+    element.classList.add('scrolling-continuous');
+  });
+}
+
+function setupTextScrolling(element) {
+  if (continuousScroll) {
+    setupContinuousScrolling(element);
+  } else {
+    setupScrolling(element);
+  }
 }
 
 async function refreshAccessToken() {
@@ -201,8 +231,8 @@ async function updateSong() {
         albumArtEl.style.display = 'none';
       }
 
-      setupScrolling(artistEl);
-      setupScrolling(trackEl);
+      setupTextScrolling(artistEl);
+      setupTextScrolling(trackEl);
 
       showThenFade();
     }

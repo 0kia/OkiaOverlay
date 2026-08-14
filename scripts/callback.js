@@ -21,6 +21,8 @@ const capsArtistCheckbox = document.getElementById('caps-artist');
 const capsTrackCheckbox = document.getElementById('caps-track');
 // flip order option
 const flipOrderCheckbox = document.getElementById('flip-order');
+// continuous scroll option (only usable while autohide is off)
+const continuousScrollCheckbox = document.getElementById('continuous-scroll');
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
@@ -93,6 +95,10 @@ async function exchangeCodeForToken(code) {
       urlParams.flip = true;
     }
 
+    if (continuousScrollCheckbox.checked && !enableAutohideCheckbox.checked) {
+      urlParams.continuous = true;
+    }
+
     overlayUrl = OVERLAY_URL + '?' + new URLSearchParams(urlParams).toString();
   }
 
@@ -100,18 +106,19 @@ async function exchangeCodeForToken(code) {
 
   optionsPanel.classList.remove('hidden');
 
-  function syncTransitionAvailability() {
+  function syncAutohideDependents() {
     transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
+    continuousScrollCheckbox.disabled = enableAutohideCheckbox.checked;
   }
 
-  syncTransitionAvailability();
+  syncAutohideDependents();
 
   // Every option just needs to regenerate the link on change/input, except
   // the bg-color checkbox which also enables/disables the color picker.
-  [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect]
+  [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect, continuousScrollCheckbox]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 
-  enableAutohideCheckbox.addEventListener('change', syncTransitionAvailability);
+  enableAutohideCheckbox.addEventListener('change', syncAutohideDependents);
 
   bgColorPicker.addEventListener('input', updateOverlayUrl);
   textWidthInput.addEventListener('input', updateOverlayUrl);
