@@ -130,8 +130,6 @@ async function exchangeCodeForToken(code) {
 
   syncAutohideDependents();
 
-  // Every option just needs to regenerate the link on change/input, except
-  // the bg-color checkbox which also enables/disables the color picker.
   [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect, continuousScrollCheckbox, artistScrollCheckbox, continuousModeSelect]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 

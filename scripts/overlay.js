@@ -36,9 +36,6 @@ if (bgColor) {
 
 if (!isNaN(customWidth) && customWidth > 0) {
   songTextEl.style.width = customWidth + 'px';
-  // The default max-width on #song is sized for the default 400px text
-  // area; a custom width can legitimately need more (or less) room, so
-  // let #song size itself to its content instead of being capped.
   songEl.style.maxWidth = 'none';
 }
 
@@ -77,7 +74,7 @@ function showError(message) {
 
 function showNoSongPlaying() {
   if (currentTrackId === NO_SONG_ID) {
-    return; // already showing this state, don't restart the fade timer every poll
+    return;
   }
 
   currentTrackId = NO_SONG_ID;
@@ -121,15 +118,11 @@ function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
   resetScrolling(element);
 
   requestAnimationFrame(() => {
-    // Starts fully off the right edge of the text area (element.clientWidth,
-    // since the element's own box stays at its set width even though the
-    // overflowing text paints past it) and ends fully off the left edge
-    // (-element.scrollWidth), then jumps back to the start and repeats.
     const windowWidth = element.clientWidth;
     const contentWidth = element.scrollWidth;
 
     if (onlyIfOverflowing && contentWidth <= windowWidth) {
-      return; // fits fine — leave it static instead of scrolling
+      return;
     }
 
     const totalDistance = windowWidth + contentWidth;
@@ -141,7 +134,6 @@ function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
     element.classList.add('scrolling-continuous');
   });
 }
-
 
 async function refreshAccessToken() {
   if (!refreshToken || !CLIENT_ID) {
