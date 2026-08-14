@@ -8,7 +8,7 @@ const optionsPanel = document.getElementById('options-panel');
 const showAlbumArtCheckbox = document.getElementById('show-album-art');
 // auto-hide option
 const enableAutohideCheckbox = document.getElementById('enable-autohide');
-// transition style option
+// transition style option (only usable while autohide is on)
 const transitionStyleSelect = document.getElementById('transition-style');
 const transitionOption = document.getElementById('transition-option');
 // background color option
@@ -21,13 +21,31 @@ const capsArtistCheckbox = document.getElementById('caps-artist');
 const capsTrackCheckbox = document.getElementById('caps-track');
 // flip order option
 const flipOrderCheckbox = document.getElementById('flip-order');
-// continuous scroll option (only usable while autohide is off)
-const continuousScrollCheckbox = document.getElementById('continuous-scroll');
-const continuousOption = document.getElementById('continuous-option');
-const continuousModeSelect = document.getElementById('continuous-mode');
-const continuousModeOption = document.getElementById('continuous-mode-option');
-// artist scroll option
-const artistScrollCheckbox = document.getElementById('enable-artist-scroll');
+
+// Title/artist scroll options: each is enable + Scroll Type (Shuttle/
+// Continuous) + Trigger (Song length/Always), and all of it is only usable
+// while autohide is off — while autohide is on these get disabled and the
+// Scroll Type resets to Shuttle (see syncScrollFieldAvailability below).
+const scrollFields = [
+  {
+    prefix: 'title',
+    enableCheckbox: document.getElementById('title-scroll'),
+    enableOption: document.getElementById('title-scroll-option'),
+    typeSelect: document.getElementById('title-scroll-type'),
+    typeOption: document.getElementById('title-scroll-type-option'),
+    triggerSelect: document.getElementById('title-trigger'),
+    triggerOption: document.getElementById('title-trigger-option')
+  },
+  {
+    prefix: 'artist',
+    enableCheckbox: document.getElementById('artist-scroll'),
+    enableOption: document.getElementById('artist-scroll-option'),
+    typeSelect: document.getElementById('artist-scroll-type'),
+    typeOption: document.getElementById('artist-scroll-type-option'),
+    triggerSelect: document.getElementById('artist-trigger'),
+    triggerOption: document.getElementById('artist-trigger-option')
+  }
+];
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
@@ -72,8 +90,7 @@ async function exchangeCodeForToken(code) {
       refresh_token: data.refresh_token,
       client_id: CLIENT_ID,
       album_art: showAlbumArtCheckbox.checked,
-      autohide: enableAutohideCheckbox.checked,
-      artist_scroll: artistScrollCheckbox.checked
+      autohide: enableAutohideCheckbox.checked
     };
 
     if (enableBgColorCheckbox.checked) {
@@ -101,13 +118,19 @@ async function exchangeCodeForToken(code) {
       urlParams.flip = true;
     }
 
-    if (continuousScrollCheckbox.checked && !enableAutohideCheckbox.checked) {
-      urlParams.continuous = true;
+    scrollFields.forEach(field => {
+      urlParams[`${field.prefix}_scroll`] = field.enableCheckbox.checked;
 
-      if (continuousModeSelect.value === 'song_length') {
-        urlParams.continuous_mode = 'song_length';
+      if (field.enableCheckbox.checked && !enableAutohideCheckbox.checked) {
+        if (field.typeSelect.value !== 'shuttle') {
+          urlParams[`${field.prefix}_scroll_type`] = field.typeSelect.value;
+        }
+
+        if (field.triggerSelect.value !== 'song_length') {
+          urlParams[`${field.prefix}_trigger`] = field.triggerSelect.value;
+        }
       }
-    }
+    });
 
     overlayUrl = OVERLAY_URL + '?' + new URLSearchParams(urlParams).toString();
   }
@@ -116,25 +139,45 @@ async function exchangeCodeForToken(code) {
 
   optionsPanel.classList.remove('hidden');
 
-  function syncAutohideDependents() {
-    transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
-    continuousScrollCheckbox.disabled = enableAutohideCheckbox.checked;
-    continuousOption.classList.toggle('option-row--disabled', enableAutohideCheckbox.checked);
-    syncContinuousModeVisibility();
+  function syncScrollFieldAvailability(field) {
+    const autohideOn = enableAutohideCheckbox.checked;
+
+    field.enableCheckbox.disabled = autohideOn;
+    field.enableOption.classList.toggle('option-row--disabled', autohideOn);
+
+    if (autohideOn) {
+      field.typeSelect.value = 'shuttle';
+    }
+
+    const nestedVisible = field.enableCheckbox.checked && !autohideOn;
+    field.typeOption.classList.toggle('hidden', !nestedVisible);
+    field.triggerOption.classList.toggle('hidden', !nestedVisible);
   }
 
-  function syncContinuousModeVisibility() {
-    const active = continuousScrollCheckbox.checked && !enableAutohideCheckbox.checked;
-    continuousModeOption.classList.toggle('hidden', !active);
+  function syncAutohideDependents() {
+    transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
+    scrollFields.forEach(syncScrollFieldAvailability);
   }
 
   syncAutohideDependents();
 
-  [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect, continuousScrollCheckbox, artistScrollCheckbox, continuousModeSelect]
+  // Every simple option just needs to regenerate the link on change/input.
+  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 
-  enableAutohideCheckbox.addEventListener('change', syncAutohideDependents);
-  continuousScrollCheckbox.addEventListener('change', syncContinuousModeVisibility);
+  enableAutohideCheckbox.addEventListener('change', () => {
+    syncAutohideDependents();
+    updateOverlayUrl();
+  });
+
+  scrollFields.forEach(field => {
+    field.enableCheckbox.addEventListener('change', () => {
+      syncScrollFieldAvailability(field);
+      updateOverlayUrl();
+    });
+    field.typeSelect.addEventListener('change', updateOverlayUrl);
+    field.triggerSelect.addEventListener('change', updateOverlayUrl);
+  });
 
   bgColorPicker.addEventListener('input', updateOverlayUrl);
   textWidthInput.addEventListener('input', updateOverlayUrl);

@@ -12,11 +12,18 @@ const validTransitions = ['none', 'fade', 'bounce'];
 const transitionStyle = validTransitions.includes(params.get('transition'))
   ? params.get('transition')
   : 'fade'; // ?transition=none|fade|bounce
-// Only makes sense while the card stays on screen permanently, so it's
-// ignored if autohide is on (the UI also disables the checkbox in that case).
-const continuousScroll = params.get('continuous') === 'true' && !enableAutohide;
-const continuousMode = params.get('continuous_mode') === 'song_length' ? 'song_length' : 'always'; // 'always' = title always continuously scrolls; 'song_length' = only when it's actually too long to fit
-const enableArtistScroll = params.get('artist_scroll') !== 'false';
+
+// Per-field scroll config. Each field (title/artist) is independently:
+// enabled or static, Shuttle (back-and-forth) or Continuous (one-way
+// ticker), and triggered Always or only when the text is too long to fit.
+// All of this is ignored while autohide is on — see applyScroll() below.
+const titleScrollEnabled = params.get('title_scroll') !== 'false';
+const titleScrollType = params.get('title_scroll_type') === 'continuous' ? 'continuous' : 'shuttle';
+const titleTrigger = params.get('title_trigger') === 'always' ? 'always' : 'song_length';
+
+const artistScrollEnabled = params.get('artist_scroll') !== 'false';
+const artistScrollType = params.get('artist_scroll_type') === 'continuous' ? 'continuous' : 'shuttle';
+const artistTrigger = params.get('artist_trigger') === 'always' ? 'always' : 'song_length';
 
 const POLL_INTERVAL = 10000;
 const VISIBLE_DURATION = 7000;
@@ -36,6 +43,9 @@ if (bgColor) {
 
 if (!isNaN(customWidth) && customWidth > 0) {
   songTextEl.style.width = customWidth + 'px';
+  // The default max-width on #song is sized for the default 400px text
+  // area; a custom width can legitimately need more (or less) room, so
+  // let #song size itself to its content instead of being capped.
   songEl.style.maxWidth = 'none';
 }
 
@@ -74,7 +84,7 @@ function showError(message) {
 
 function showNoSongPlaying() {
   if (currentTrackId === NO_SONG_ID) {
-    return;
+    return; // already showing this state, don't restart the fade timer every poll
   }
 
   currentTrackId = NO_SONG_ID;
@@ -83,12 +93,8 @@ function showNoSongPlaying() {
   trackEl.textContent = NO_SONG_TEXT;
   albumArtEl.style.display = 'none';
 
-  if (enableArtistScroll) {
-    setupScrolling(artistEl);
-  } else {
-    resetScrolling(artistEl);
-  }
-  continuousScroll ? setupContinuousScrolling(trackEl, { onlyIfOverflowing: continuousMode === 'song_length' }) : setupScrolling(trackEl);
+  applyScroll(artistEl, artistScrollEnabled, artistScrollType, artistTrigger);
+  applyScroll(trackEl, titleScrollEnabled, titleScrollType, titleTrigger);
 
   showThenFade();
 }
@@ -101,16 +107,18 @@ function resetScrolling(element) {
   element.style.removeProperty('animation-duration');
 }
 
-function setupScrolling(element) {
+function setupScrolling(element, { onlyIfOverflowing = true } = {}) {
   resetScrolling(element);
 
   requestAnimationFrame(() => {
-    if (element.scrollWidth > element.clientWidth) {
-      const distance = element.scrollWidth - element.clientWidth;
+    const distance = Math.max(0, element.scrollWidth - element.clientWidth);
 
-      element.style.setProperty('--scroll-distance', `-${distance}px`);
-      element.classList.add('scrolling');
+    if (onlyIfOverflowing && distance === 0) {
+      return; // fits fine — leave it static instead of scrolling
     }
+
+    element.style.setProperty('--scroll-distance', `-${distance}px`);
+    element.classList.add('scrolling');
   });
 }
 
@@ -118,11 +126,15 @@ function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
   resetScrolling(element);
 
   requestAnimationFrame(() => {
+    // Starts fully off the right edge of the text area (element.clientWidth,
+    // since the element's own box stays at its set width even though the
+    // overflowing text paints past it) and ends fully off the left edge
+    // (-element.scrollWidth), then jumps back to the start and repeats.
     const windowWidth = element.clientWidth;
     const contentWidth = element.scrollWidth;
 
     if (onlyIfOverflowing && contentWidth <= windowWidth) {
-      return;
+      return; // fits fine — leave it static instead of scrolling
     }
 
     const totalDistance = windowWidth + contentWidth;
@@ -134,6 +146,31 @@ function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
     element.classList.add('scrolling-continuous');
   });
 }
+
+// Single entry point used for both fields. While autohide is on, all the
+// per-field config is ignored entirely and both fields just get the
+// original simple behavior: shuttle-scroll if (and only if) the text
+// overflows, on the fixed 8s cycle defined in Overlay.css.
+function applyScroll(element, enabled, type, trigger) {
+  if (enableAutohide) {
+    setupScrolling(element);
+    return;
+  }
+
+  if (!enabled) {
+    resetScrolling(element);
+    return;
+  }
+
+  const onlyIfOverflowing = trigger === 'song_length';
+
+  if (type === 'continuous') {
+    setupContinuousScrolling(element, { onlyIfOverflowing });
+  } else {
+    setupScrolling(element, { onlyIfOverflowing });
+  }
+}
+
 
 async function refreshAccessToken() {
   if (!refreshToken || !CLIENT_ID) {
@@ -232,12 +269,8 @@ async function updateSong() {
         albumArtEl.style.display = 'none';
       }
 
-      if (enableArtistScroll) {
-        setupScrolling(artistEl);
-      } else {
-        resetScrolling(artistEl);
-      }
-      continuousScroll ? setupContinuousScrolling(trackEl, { onlyIfOverflowing: continuousMode === 'song_length' }) : setupScrolling(trackEl);
+      applyScroll(artistEl, artistScrollEnabled, artistScrollType, artistTrigger);
+      applyScroll(trackEl, titleScrollEnabled, titleScrollType, titleTrigger);
 
       showThenFade();
     }

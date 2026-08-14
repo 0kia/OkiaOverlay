@@ -56,21 +56,45 @@
                             <option value="bounce">Bounce</option>
                         </select>
                     </label>
-                    <label id="continuous-option" class="option-row">
-                        <span>Title scroll</span>
-                        <input type="checkbox" id="continuous-scroll">
+
+                    <label id="title-scroll-option" class="option-row">
+                        <span>Title Scroll</span>
+                        <input type="checkbox" id="title-scroll" checked>
                     </label>
-                    <label id="continuous-mode-option" class="option-row option-row--nested hidden">
-                        <span>Trigger</span>
-                        <select id="continuous-mode">
-                            <option value="always" selected>Always</option>
-                            <option value="song_length">Song length</option>
+                    <label id="title-scroll-type-option" class="option-row option-row--nested">
+                        <span>Scroll Type</span>
+                        <select id="title-scroll-type">
+                            <option value="shuttle" selected>Shuttle</option>
+                            <option value="continuous">Continuous</option>
                         </select>
                     </label>
+                    <label id="title-trigger-option" class="option-row option-row--nested">
+                        <span>Trigger</span>
+                        <select id="title-trigger">
+                            <option value="song_length" selected>Song length</option>
+                            <option value="always">Always</option>
+                        </select>
+                    </label>
+
                     <label id="artist-scroll-option" class="option-row">
                         <span>Artist Scroll</span>
-                        <input type="checkbox" id="enable-artist-scroll" checked>
+                        <input type="checkbox" id="artist-scroll" checked>
                     </label>
+                    <label id="artist-scroll-type-option" class="option-row option-row--nested">
+                        <span>Scroll Type</span>
+                        <select id="artist-scroll-type">
+                            <option value="shuttle" selected>Shuttle</option>
+                            <option value="continuous">Continuous</option>
+                        </select>
+                    </label>
+                    <label id="artist-trigger-option" class="option-row option-row--nested">
+                        <span>Trigger</span>
+                        <select id="artist-trigger">
+                            <option value="song_length" selected>Song length</option>
+                            <option value="always">Always</option>
+                        </select>
+                    </label>
+
                     <label id="width-option" class="option-row">
                         <span>Container width</span>
                         <input type="number" id="text-width" value="400" min="100" max="2000" step="10">
