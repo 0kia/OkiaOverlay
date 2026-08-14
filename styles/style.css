@@ -75,6 +75,10 @@ h1 {
   color: grey;
 }
 
+.option-row--disabled {
+  color: grey;
+}
+
 .option-row input[type="checkbox"] {
   width: 18px;
   height: 18px;

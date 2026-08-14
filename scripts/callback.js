@@ -23,6 +23,7 @@ const capsTrackCheckbox = document.getElementById('caps-track');
 const flipOrderCheckbox = document.getElementById('flip-order');
 // continuous scroll option (only usable while autohide is off)
 const continuousScrollCheckbox = document.getElementById('continuous-scroll');
+const continuousOption = document.getElementById('continuous-option');
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
@@ -109,6 +110,7 @@ async function exchangeCodeForToken(code) {
   function syncAutohideDependents() {
     transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
     continuousScrollCheckbox.disabled = enableAutohideCheckbox.checked;
+    continuousOption.classList.toggle('option-row--disabled', enableAutohideCheckbox.checked);
   }
 
   syncAutohideDependents();
