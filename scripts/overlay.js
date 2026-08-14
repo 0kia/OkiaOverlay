@@ -15,6 +15,8 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
 // Only makes sense while the card stays on screen permanently, so it's
 // ignored if autohide is on (the UI also disables the checkbox in that case).
 const continuousScroll = params.get('continuous') === 'true' && !enableAutohide;
+const continuousMode = params.get('continuous_mode') === 'song_length' ? 'song_length' : 'always'; // 'always' = title always continuously scrolls; 'song_length' = only when it's actually too long to fit
+const enableArtistScroll = params.get('artist_scroll') !== 'false';
 
 const POLL_INTERVAL = 10000;
 const VISIBLE_DURATION = 7000;
@@ -84,8 +86,12 @@ function showNoSongPlaying() {
   trackEl.textContent = NO_SONG_TEXT;
   albumArtEl.style.display = 'none';
 
-  setupScrolling(artistEl);
-  continuousScroll ? setupContinuousScrolling(trackEl) : setupScrolling(trackEl);
+  if (enableArtistScroll) {
+    setupScrolling(artistEl);
+  } else {
+    resetScrolling(artistEl);
+  }
+  continuousScroll ? setupContinuousScrolling(trackEl, { onlyIfOverflowing: continuousMode === 'song_length' }) : setupScrolling(trackEl);
 
   showThenFade();
 }
@@ -111,7 +117,7 @@ function setupScrolling(element) {
   });
 }
 
-function setupContinuousScrolling(element) {
+function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
   resetScrolling(element);
 
   requestAnimationFrame(() => {
@@ -121,6 +127,11 @@ function setupContinuousScrolling(element) {
     // (-element.scrollWidth), then jumps back to the start and repeats.
     const windowWidth = element.clientWidth;
     const contentWidth = element.scrollWidth;
+
+    if (onlyIfOverflowing && contentWidth <= windowWidth) {
+      return; // fits fine — leave it static instead of scrolling
+    }
+
     const totalDistance = windowWidth + contentWidth;
     const duration = totalDistance / CONTINUOUS_SCROLL_SPEED_PX_PER_SEC;
 
@@ -229,8 +240,12 @@ async function updateSong() {
         albumArtEl.style.display = 'none';
       }
 
-      setupScrolling(artistEl);
-      continuousScroll ? setupContinuousScrolling(trackEl) : setupScrolling(trackEl);
+      if (enableArtistScroll) {
+        setupScrolling(artistEl);
+      } else {
+        resetScrolling(artistEl);
+      }
+      continuousScroll ? setupContinuousScrolling(trackEl, { onlyIfOverflowing: continuousMode === 'song_length' }) : setupScrolling(trackEl);
 
       showThenFade();
     }

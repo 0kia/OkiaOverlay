@@ -24,6 +24,10 @@ const flipOrderCheckbox = document.getElementById('flip-order');
 // continuous scroll option (only usable while autohide is off)
 const continuousScrollCheckbox = document.getElementById('continuous-scroll');
 const continuousOption = document.getElementById('continuous-option');
+const continuousModeSelect = document.getElementById('continuous-mode');
+const continuousModeOption = document.getElementById('continuous-mode-option');
+// artist scroll option
+const artistScrollCheckbox = document.getElementById('enable-artist-scroll');
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
@@ -68,7 +72,8 @@ async function exchangeCodeForToken(code) {
       refresh_token: data.refresh_token,
       client_id: CLIENT_ID,
       album_art: showAlbumArtCheckbox.checked,
-      autohide: enableAutohideCheckbox.checked
+      autohide: enableAutohideCheckbox.checked,
+      artist_scroll: artistScrollCheckbox.checked
     };
 
     if (enableBgColorCheckbox.checked) {
@@ -98,6 +103,10 @@ async function exchangeCodeForToken(code) {
 
     if (continuousScrollCheckbox.checked && !enableAutohideCheckbox.checked) {
       urlParams.continuous = true;
+
+      if (continuousModeSelect.value === 'song_length') {
+        urlParams.continuous_mode = 'song_length';
+      }
     }
 
     overlayUrl = OVERLAY_URL + '?' + new URLSearchParams(urlParams).toString();
@@ -111,16 +120,23 @@ async function exchangeCodeForToken(code) {
     transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
     continuousScrollCheckbox.disabled = enableAutohideCheckbox.checked;
     continuousOption.classList.toggle('option-row--disabled', enableAutohideCheckbox.checked);
+    syncContinuousModeVisibility();
+  }
+
+  function syncContinuousModeVisibility() {
+    const active = continuousScrollCheckbox.checked && !enableAutohideCheckbox.checked;
+    continuousModeOption.classList.toggle('hidden', !active);
   }
 
   syncAutohideDependents();
 
   // Every option just needs to regenerate the link on change/input, except
   // the bg-color checkbox which also enables/disables the color picker.
-  [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect, continuousScrollCheckbox]
+  [showAlbumArtCheckbox, enableAutohideCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect, continuousScrollCheckbox, artistScrollCheckbox, continuousModeSelect]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 
   enableAutohideCheckbox.addEventListener('change', syncAutohideDependents);
+  continuousScrollCheckbox.addEventListener('change', syncContinuousModeVisibility);
 
   bgColorPicker.addEventListener('input', updateOverlayUrl);
   textWidthInput.addEventListener('input', updateOverlayUrl);

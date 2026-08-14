@@ -48,7 +48,6 @@
                         <span>Auto-hide</span>
                         <input type="checkbox" id="enable-autohide">
                     </label>
-
                     <label id="transition-option" class="option-row option-row--nested">
                         <span>Transition</span>
                         <select id="transition-style">
@@ -57,17 +56,25 @@
                             <option value="bounce">Bounce</option>
                         </select>
                     </label>
-
                     <label id="continuous-option" class="option-row">
-                        <span>Continuous scroll</span>
+                        <span>Title scroll</span>
                         <input type="checkbox" id="continuous-scroll">
                     </label>
-
+                    <label id="continuous-mode-option" class="option-row option-row--nested hidden">
+                        <span>Trigger</span>
+                        <select id="continuous-mode">
+                            <option value="always" selected>Always</option>
+                            <option value="song_length">Song length</option>
+                        </select>
+                    </label>
+                    <label id="artist-scroll-option" class="option-row">
+                        <span>Artist Scroll</span>
+                        <input type="checkbox" id="enable-artist-scroll" checked>
+                    </label>
                     <label id="width-option" class="option-row">
                         <span>Container width</span>
                         <input type="number" id="text-width" value="400" min="100" max="2000" step="10">
                     </label>
-
                 </div>
             </div>
         </div>
