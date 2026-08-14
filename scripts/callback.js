@@ -11,6 +11,9 @@ const enableAutohideCheckbox = document.getElementById('enable-autohide');
 // transition style option (only usable while autohide is on)
 const transitionStyleSelect = document.getElementById('transition-style');
 const transitionOption = document.getElementById('transition-option');
+// autohide duration option (only usable while autohide is on)
+const autohideDurationInput = document.getElementById('autohide-duration');
+const durationOption = document.getElementById('duration-option');
 // background color option
 const enableBgColorCheckbox = document.getElementById('enable-bg-color');
 const bgColorPicker = document.getElementById('bg-color-picker');
@@ -114,6 +117,11 @@ async function exchangeCodeForToken(code) {
       urlParams.transition = transitionStyleSelect.value;
     }
 
+    const durationValue = parseFloat(autohideDurationInput.value);
+    if (!isNaN(durationValue) && durationValue !== 7) {
+      urlParams.autohide_duration = durationValue;
+    }
+
     if (flipOrderCheckbox.checked) {
       urlParams.flip = true;
     }
@@ -157,6 +165,7 @@ async function exchangeCodeForToken(code) {
 
   function syncAutohideDependents() {
     transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
+    durationOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
     scrollFields.forEach(syncScrollFieldAvailability);
   }
 
@@ -165,6 +174,8 @@ async function exchangeCodeForToken(code) {
   // Every simple option just needs to regenerate the link on change/input.
   [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
+
+  autohideDurationInput.addEventListener('input', updateOverlayUrl);
 
   enableAutohideCheckbox.addEventListener('change', () => {
     syncAutohideDependents();
