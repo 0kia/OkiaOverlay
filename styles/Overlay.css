@@ -115,7 +115,10 @@ html, body {
    pause/bounce-back of the default mode. Only used while autohide is off. */
 #artist.scrolling-continuous,
 #track.scrolling-continuous {
-  animation: scroll-continuous 10s linear infinite;
+  animation-name: scroll-continuous;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: 10s; /* fallback; overridden inline by JS based on text length */
 }
 
 @keyframes scroll-continuous {

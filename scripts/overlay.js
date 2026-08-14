@@ -18,6 +18,7 @@ const continuousScroll = params.get('continuous') === 'true' && !enableAutohide;
 
 const POLL_INTERVAL = 10000;
 const VISIBLE_DURATION = 7000;
+const CONTINUOUS_SCROLL_SPEED_PX_PER_SEC = 80; // constant travel speed regardless of title length
 const NO_SONG_ID = '__no_song__'; // sentinel currentTrackId used for the empty state, distinct from any real Spotify track id and from the initial null
 const NO_SONG_TEXT = 'No song playing';
 
@@ -94,6 +95,7 @@ function resetScrolling(element) {
   element.style.removeProperty('--scroll-distance');
   element.style.removeProperty('--continuous-start');
   element.style.removeProperty('--continuous-end');
+  element.style.removeProperty('animation-duration');
 }
 
 function setupScrolling(element) {
@@ -119,9 +121,12 @@ function setupContinuousScrolling(element) {
     // (-element.scrollWidth), then jumps back to the start and repeats.
     const windowWidth = element.clientWidth;
     const contentWidth = element.scrollWidth;
+    const totalDistance = windowWidth + contentWidth;
+    const duration = totalDistance / CONTINUOUS_SCROLL_SPEED_PX_PER_SEC;
 
     element.style.setProperty('--continuous-start', `${windowWidth}px`);
     element.style.setProperty('--continuous-end', `-${contentWidth}px`);
+    element.style.setProperty('animation-duration', `${duration}s`);
     element.classList.add('scrolling-continuous');
   });
 }
