@@ -146,6 +146,7 @@ async function exchangeCodeForToken(code) {
     field.enableOption.classList.toggle('option-row--disabled', autohideOn);
 
     if (autohideOn) {
+      field.enableCheckbox.checked = false;
       field.typeSelect.value = 'shuttle';
     }
 
