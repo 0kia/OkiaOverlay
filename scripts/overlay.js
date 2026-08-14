@@ -25,8 +25,12 @@ const artistScrollEnabled = params.get('artist_scroll') !== 'false';
 const artistScrollType = params.get('artist_scroll_type') === 'continuous' ? 'continuous' : 'shuttle';
 const artistTrigger = params.get('artist_trigger') === 'always' ? 'always' : 'song_length';
 
+const parsedAutohideDuration = parseFloat(params.get('autohide_duration'));
+const AUTOHIDE_DURATION = (!isNaN(parsedAutohideDuration) && parsedAutohideDuration > 0)
+  ? parsedAutohideDuration
+  : 7; // seconds — how long the card stays visible, and (while autohide is on) how long one shuttle-scroll cycle takes
+
 const POLL_INTERVAL = 10000;
-const VISIBLE_DURATION = 7000;
 const CONTINUOUS_SCROLL_SPEED_PX_PER_SEC = 80; // constant travel speed regardless of title length
 const NO_SONG_ID = '__no_song__'; // sentinel currentTrackId used for the empty state, distinct from any real Spotify track id and from the initial null
 const NO_SONG_TEXT = 'No song playing';
@@ -70,7 +74,7 @@ function showThenFade() {
 
   hideTimer = setTimeout(() => {
     songEl.classList.remove('is-visible');
-  }, VISIBLE_DURATION);
+  }, AUTOHIDE_DURATION * 1000);
 }
 
 function showError(message) {
@@ -107,7 +111,7 @@ function resetScrolling(element) {
   element.style.removeProperty('animation-duration');
 }
 
-function setupScrolling(element, { onlyIfOverflowing = true } = {}) {
+function setupScrolling(element, { onlyIfOverflowing = true, duration = null } = {}) {
   resetScrolling(element);
 
   requestAnimationFrame(() => {
@@ -118,6 +122,11 @@ function setupScrolling(element, { onlyIfOverflowing = true } = {}) {
     }
 
     element.style.setProperty('--scroll-distance', `-${distance}px`);
+
+    if (duration !== null) {
+      element.style.setProperty('animation-duration', `${duration}s`);
+    }
+
     element.classList.add('scrolling');
   });
 }
@@ -153,7 +162,7 @@ function setupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
 // overflows, on the fixed 8s cycle defined in Overlay.css.
 function applyScroll(element, enabled, type, trigger) {
   if (enableAutohide) {
-    setupScrolling(element);
+    setupScrolling(element, { duration: AUTOHIDE_DURATION });
     return;
   }
 
