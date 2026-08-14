@@ -83,8 +83,8 @@ function showNoSongPlaying() {
   trackEl.textContent = NO_SONG_TEXT;
   albumArtEl.style.display = 'none';
 
-  setupTextScrolling(artistEl);
-  setupTextScrolling(trackEl);
+  setupScrolling(artistEl);
+  continuousScroll ? setupContinuousScrolling(trackEl) : setupScrolling(trackEl);
 
   showThenFade();
 }
@@ -126,13 +126,6 @@ function setupContinuousScrolling(element) {
   });
 }
 
-function setupTextScrolling(element) {
-  if (continuousScroll) {
-    setupContinuousScrolling(element);
-  } else {
-    setupScrolling(element);
-  }
-}
 
 async function refreshAccessToken() {
   if (!refreshToken || !CLIENT_ID) {
@@ -231,8 +224,8 @@ async function updateSong() {
         albumArtEl.style.display = 'none';
       }
 
-      setupTextScrolling(artistEl);
-      setupTextScrolling(trackEl);
+      setupScrolling(artistEl);
+      continuousScroll ? setupContinuousScrolling(trackEl) : setupScrolling(trackEl);
 
       showThenFade();
     }
