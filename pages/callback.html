@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <title>okia's Overlay - Link</title>
         <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/Overlay.css">
     </head>
 
     <body>
@@ -11,6 +12,26 @@
 
         <div class="center">
             <p id="status">Logging in...</p>
+
+            <div id="preview-section" class="preview-section hidden">
+                <div class="preview-header">
+                    <h2 class="options-title">Preview</h2>
+                    <button id="preview-replay" type="button">Replay transition</button>
+                </div>
+                <div class="preview-canvas">
+                    <div id="song">
+                        <img
+                            id="album-art"
+                            alt=""
+                            src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23333'/%3E%3Ctext x='50' y='63' font-size='42' text-anchor='middle' fill='%23888'%3E%E2%99%AA%3C/text%3E%3C/svg%3E"
+                        >
+                        <div id="song-text">
+                            <div id="artist">Sample Artist Featuring Someone Else</div>
+                            <div id="track">This Is An Example Song Title For The Preview</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="options-panel" class="options-columns hidden">
                 <div class="options-panel">

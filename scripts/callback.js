@@ -4,6 +4,89 @@ const OVERLAY_URL = 'https://0kia.github.io/OkiaOverlay/pages/overlay.html';
 
 const statusEl = document.getElementById('status');
 const optionsPanel = document.getElementById('options-panel');
+const previewSection = document.getElementById('preview-section');
+const previewReplayButton = document.getElementById('preview-replay');
+const previewSongEl = document.getElementById('song');
+const previewSongTextEl = document.getElementById('song-text');
+const previewAlbumArtEl = document.getElementById('album-art');
+const previewArtistEl = document.getElementById('artist');
+const previewTrackEl = document.getElementById('track');
+
+const PREVIEW_CONTINUOUS_SCROLL_SPEED_PX_PER_SEC = 80; // matches overlay.js
+
+// These four functions mirror overlay.js's resetScrolling/setupScrolling/
+// setupContinuousScrolling/applyScroll exactly, just operating on the
+// preview's elements — kept here rather than imported since overlay.js
+// also runs Spotify API calls we don't want firing on this page.
+function previewResetScrolling(element) {
+  element.classList.remove('scrolling', 'scrolling-continuous');
+  element.style.removeProperty('--scroll-distance');
+  element.style.removeProperty('--continuous-start');
+  element.style.removeProperty('--continuous-end');
+  element.style.removeProperty('animation-duration');
+}
+
+function previewSetupScrolling(element, { onlyIfOverflowing = true, duration = null } = {}) {
+  previewResetScrolling(element);
+
+  requestAnimationFrame(() => {
+    const distance = Math.max(0, element.scrollWidth - element.clientWidth);
+
+    if (onlyIfOverflowing && distance === 0) {
+      return;
+    }
+
+    element.style.setProperty('--scroll-distance', `-${distance}px`);
+
+    if (duration !== null) {
+      element.style.setProperty('animation-duration', `${duration}s`);
+    }
+
+    element.classList.add('scrolling');
+  });
+}
+
+function previewSetupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
+  previewResetScrolling(element);
+
+  requestAnimationFrame(() => {
+    const windowWidth = element.clientWidth;
+    const contentWidth = element.scrollWidth;
+
+    if (onlyIfOverflowing && contentWidth <= windowWidth) {
+      return;
+    }
+
+    const totalDistance = windowWidth + contentWidth;
+    const duration = totalDistance / PREVIEW_CONTINUOUS_SCROLL_SPEED_PX_PER_SEC;
+
+    element.style.setProperty('--continuous-start', `${windowWidth}px`);
+    element.style.setProperty('--continuous-end', `-${contentWidth}px`);
+    element.style.setProperty('animation-duration', `${duration}s`);
+    element.classList.add('scrolling-continuous');
+  });
+}
+
+function previewApplyScroll(element, enabled, type, trigger, autohideOn, duration) {
+  if (autohideOn) {
+    previewSetupScrolling(element, { duration });
+    return;
+  }
+
+  if (!enabled) {
+    previewResetScrolling(element);
+    return;
+  }
+
+  const onlyIfOverflowing = trigger === 'song_length';
+
+  if (type === 'continuous') {
+    previewSetupContinuousScrolling(element, { onlyIfOverflowing });
+  } else {
+    previewSetupScrolling(element, { onlyIfOverflowing });
+  }
+}
+
 // display album art option
 const showAlbumArtCheckbox = document.getElementById('show-album-art');
 // auto-hide option
@@ -141,11 +224,68 @@ async function exchangeCodeForToken(code) {
     });
 
     overlayUrl = OVERLAY_URL + '?' + new URLSearchParams(urlParams).toString();
+
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const titleField = scrollFields.find(f => f.prefix === 'title');
+    const artistField = scrollFields.find(f => f.prefix === 'artist');
+
+    const widthValue = parseInt(textWidthInput.value, 10);
+    const durationValue = parseFloat(autohideDurationInput.value);
+    const duration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
+
+    previewSongEl.style.backgroundColor = enableBgColorCheckbox.checked ? bgColorPicker.value : 'transparent';
+
+    if (!isNaN(widthValue) && widthValue > 0) {
+      previewSongTextEl.style.width = widthValue + 'px';
+      previewSongEl.style.maxWidth = 'none';
+    } else {
+      previewSongTextEl.style.width = '400px';
+      previewSongEl.style.maxWidth = '600px';
+    }
+
+    previewAlbumArtEl.style.display = showAlbumArtCheckbox.checked ? 'block' : 'none';
+
+    previewArtistEl.classList.toggle('caps-text', capsArtistCheckbox.checked);
+    previewTrackEl.classList.toggle('caps-text', capsTrackCheckbox.checked);
+
+    previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
+
+    previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
+    previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
+
+    previewApplyScroll(
+      previewArtistEl,
+      artistField.enableCheckbox.checked,
+      artistField.typeSelect.value,
+      artistField.triggerSelect.value,
+      enableAutohideCheckbox.checked,
+      duration
+    );
+
+    previewApplyScroll(
+      previewTrackEl,
+      titleField.enableCheckbox.checked,
+      titleField.typeSelect.value,
+      titleField.triggerSelect.value,
+      enableAutohideCheckbox.checked,
+      duration
+    );
   }
 
   updateOverlayUrl();
 
   optionsPanel.classList.remove('hidden');
+  previewSection.classList.remove('hidden');
+  previewSongEl.classList.add('is-visible');
+
+  previewReplayButton.addEventListener('click', () => {
+    previewSongEl.classList.remove('is-visible');
+    void previewSongEl.offsetWidth; // force reflow so the transition restarts
+    previewSongEl.classList.add('is-visible');
+  });
 
   function syncScrollFieldAvailability(field) {
     const autohideOn = enableAutohideCheckbox.checked;

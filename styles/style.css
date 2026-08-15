@@ -24,6 +24,54 @@ h1 {
   gap: 14px;
 }
 
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 620px;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#preview-replay {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+#preview-replay:hover {
+  border-color: #1DB954;
+}
+
+.preview-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 24px;
+  box-sizing: border-box;
+  /* Checkerboard pattern — a common way to indicate transparent regions,
+     so it's visually obvious what's actually transparent vs. your chosen
+     background color. */
+  background-image:
+    linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+    linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+    linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-color: #1e1e1e;
+}
+
 .center label {
   font-size: 1.1rem;
   font-weight: 600;
