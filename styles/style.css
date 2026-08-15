@@ -53,11 +53,11 @@ h1 {
 }
 
 .preview-canvas {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  padding: 24px;
+  align-self: flex-start;
+  width: fit-content;
   box-sizing: border-box;
   /* Checkerboard pattern — a common way to indicate transparent regions,
      so it's visually obvious what's actually transparent vs. your chosen
