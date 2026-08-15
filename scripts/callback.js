@@ -275,11 +275,10 @@ async function exchangeCodeForToken(code) {
     );
   }
 
-  updateOverlayUrl();
-
   optionsPanel.classList.remove('hidden');
   previewSection.classList.remove('hidden');
   previewSongEl.classList.add('is-visible');
+  updateOverlayUrl();
 
   previewReplayButton.addEventListener('click', () => {
     previewSongEl.classList.remove('is-visible');
