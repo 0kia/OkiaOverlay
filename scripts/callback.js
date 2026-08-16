@@ -12,80 +12,80 @@ const previewAlbumArtEl = document.getElementById('album-art');
 const previewArtistEl = document.getElementById('artist');
 const previewTrackEl = document.getElementById('track');
 
-const PREVIEW_CONTINUOUS_SCROLL_SPEED_PX_PER_SEC = 80; // matches overlay.js
+// Mirrors overlay.js's resetScrolling/setupScrolling/setupContinuousScrolling/
+// applyScroll exactly, just operating on the preview's own elements — kept
+// here (rather than including overlay.js on this page) since overlay.js also
+// polls the real Spotify API, which we don't want running on this page.
+const previewScroll = {
+  reset(element) {
+    element.classList.remove('scrolling', 'scrolling-continuous');
+    element.style.removeProperty('--scroll-distance');
+    element.style.removeProperty('--continuous-start');
+    element.style.removeProperty('--continuous-end');
+    element.style.removeProperty('animation-duration');
+  },
 
-// These four functions mirror overlay.js's resetScrolling/setupScrolling/
-// setupContinuousScrolling/applyScroll exactly, just operating on the
-// preview's elements — kept here rather than imported since overlay.js
-// also runs Spotify API calls we don't want firing on this page.
-function previewResetScrolling(element) {
-  element.classList.remove('scrolling', 'scrolling-continuous');
-  element.style.removeProperty('--scroll-distance');
-  element.style.removeProperty('--continuous-start');
-  element.style.removeProperty('--continuous-end');
-  element.style.removeProperty('animation-duration');
-}
+  setupShuttle(element, { onlyIfOverflowing = true, duration = null } = {}) {
+    this.reset(element);
 
-function previewSetupScrolling(element, { onlyIfOverflowing = true, duration = null } = {}) {
-  previewResetScrolling(element);
+    requestAnimationFrame(() => {
+      const distance = Math.max(0, element.scrollWidth - element.clientWidth);
 
-  requestAnimationFrame(() => {
-    const distance = Math.max(0, element.scrollWidth - element.clientWidth);
+      if (onlyIfOverflowing && distance === 0) {
+        return;
+      }
 
-    if (onlyIfOverflowing && distance === 0) {
-      return;
-    }
+      element.style.setProperty('--scroll-distance', `-${distance}px`);
 
-    element.style.setProperty('--scroll-distance', `-${distance}px`);
+      if (duration !== null) {
+        element.style.setProperty('animation-duration', `${duration}s`);
+      }
 
-    if (duration !== null) {
+      element.classList.add('scrolling');
+    });
+  },
+
+  setupContinuous(element, { onlyIfOverflowing = false } = {}) {
+    this.reset(element);
+
+    requestAnimationFrame(() => {
+      const windowWidth = element.clientWidth;
+      const contentWidth = element.scrollWidth;
+
+      if (onlyIfOverflowing && contentWidth <= windowWidth) {
+        return;
+      }
+
+      const totalDistance = windowWidth + contentWidth;
+      const duration = totalDistance / 80; // px/sec, matches CONTINUOUS_SCROLL_SPEED_PX_PER_SEC in overlay.js
+
+      element.style.setProperty('--continuous-start', `${windowWidth}px`);
+      element.style.setProperty('--continuous-end', `-${contentWidth}px`);
       element.style.setProperty('animation-duration', `${duration}s`);
-    }
+      element.classList.add('scrolling-continuous');
+    });
+  },
 
-    element.classList.add('scrolling');
-  });
-}
-
-function previewSetupContinuousScrolling(element, { onlyIfOverflowing = false } = {}) {
-  previewResetScrolling(element);
-
-  requestAnimationFrame(() => {
-    const windowWidth = element.clientWidth;
-    const contentWidth = element.scrollWidth;
-
-    if (onlyIfOverflowing && contentWidth <= windowWidth) {
+  apply(element, enabled, type, trigger, autohideOn, duration) {
+    if (autohideOn) {
+      this.setupShuttle(element, { duration });
       return;
     }
 
-    const totalDistance = windowWidth + contentWidth;
-    const duration = totalDistance / PREVIEW_CONTINUOUS_SCROLL_SPEED_PX_PER_SEC;
+    if (!enabled) {
+      this.reset(element);
+      return;
+    }
 
-    element.style.setProperty('--continuous-start', `${windowWidth}px`);
-    element.style.setProperty('--continuous-end', `-${contentWidth}px`);
-    element.style.setProperty('animation-duration', `${duration}s`);
-    element.classList.add('scrolling-continuous');
-  });
-}
+    const onlyIfOverflowing = trigger === 'song_length';
 
-function previewApplyScroll(element, enabled, type, trigger, autohideOn, duration) {
-  if (autohideOn) {
-    previewSetupScrolling(element, { duration });
-    return;
+    if (type === 'continuous') {
+      this.setupContinuous(element, { onlyIfOverflowing });
+    } else {
+      this.setupShuttle(element, { onlyIfOverflowing });
+    }
   }
-
-  if (!enabled) {
-    previewResetScrolling(element);
-    return;
-  }
-
-  const onlyIfOverflowing = trigger === 'song_length';
-
-  if (type === 'continuous') {
-    previewSetupContinuousScrolling(element, { onlyIfOverflowing });
-  } else {
-    previewSetupScrolling(element, { onlyIfOverflowing });
-  }
-}
+};
 
 // display album art option
 const showAlbumArtCheckbox = document.getElementById('show-album-art');
@@ -132,6 +132,9 @@ const scrollFields = [
     triggerOption: document.getElementById('artist-trigger-option')
   }
 ];
+
+const titleField = scrollFields.find(f => f.prefix === 'title');
+const artistField = scrollFields.find(f => f.prefix === 'artist');
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
@@ -229,9 +232,6 @@ async function exchangeCodeForToken(code) {
   }
 
   function updatePreview() {
-    const titleField = scrollFields.find(f => f.prefix === 'title');
-    const artistField = scrollFields.find(f => f.prefix === 'artist');
-
     const widthValue = parseInt(textWidthInput.value, 10);
     const durationValue = parseFloat(autohideDurationInput.value);
     const duration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
@@ -256,34 +256,74 @@ async function exchangeCodeForToken(code) {
     previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
     previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
 
-    previewApplyScroll(
-      previewArtistEl,
-      artistField.enableCheckbox.checked,
-      artistField.typeSelect.value,
-      artistField.triggerSelect.value,
-      enableAutohideCheckbox.checked,
-      duration
-    );
+    const autohideOn = enableAutohideCheckbox.checked;
 
-    previewApplyScroll(
-      previewTrackEl,
-      titleField.enableCheckbox.checked,
-      titleField.typeSelect.value,
-      titleField.triggerSelect.value,
-      enableAutohideCheckbox.checked,
-      duration
-    );
+    previewScroll.apply(previewArtistEl, artistField.enableCheckbox.checked, artistField.typeSelect.value, artistField.triggerSelect.value, autohideOn, duration);
+    previewScroll.apply(previewTrackEl, titleField.enableCheckbox.checked, titleField.typeSelect.value, titleField.triggerSelect.value, autohideOn, duration);
+  }
+
+  let previewLoopTimer = null;
+  let previewLoopRunning = false;
+
+  function stopPreviewLoop() {
+    clearTimeout(previewLoopTimer);
+    previewLoopTimer = null;
+    previewLoopRunning = false;
+  }
+
+  function replayPreviewEntrance() {
+    previewSongEl.classList.remove('is-visible');
+    void previewSongEl.offsetWidth; // force reflow so the transition restarts even if it's already showing
+    previewSongEl.classList.add('is-visible');
+  }
+
+  function runPreviewCycle() {
+    if (!enableAutohideCheckbox.checked) {
+      previewLoopRunning = false;
+      return;
+    }
+
+    replayPreviewEntrance();
+
+    const durationValue = parseFloat(autohideDurationInput.value);
+    const visibleDuration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
+
+    previewLoopTimer = setTimeout(() => {
+      previewSongEl.classList.remove('is-visible');
+
+      // Small fixed pause so the exit transition actually finishes playing
+      // before the next entrance starts, rather than cutting it off.
+      previewLoopTimer = setTimeout(runPreviewCycle, 600);
+    }, visibleDuration * 1000);
+  }
+
+  function startPreviewLoop() {
+    if (previewLoopRunning) {
+      return;
+    }
+
+    previewLoopRunning = true;
+    runPreviewCycle();
   }
 
   optionsPanel.classList.remove('hidden');
   previewSection.classList.remove('hidden');
-  previewSongEl.classList.add('is-visible');
+
+  if (enableAutohideCheckbox.checked) {
+    startPreviewLoop();
+  } else {
+    previewSongEl.classList.add('is-visible');
+  }
+
   updateOverlayUrl();
 
   previewReplayButton.addEventListener('click', () => {
-    previewSongEl.classList.remove('is-visible');
-    void previewSongEl.offsetWidth; // force reflow so the transition restarts
-    previewSongEl.classList.add('is-visible');
+    if (enableAutohideCheckbox.checked) {
+      stopPreviewLoop();
+      startPreviewLoop();
+    } else {
+      replayPreviewEntrance();
+    }
   });
 
   function syncScrollFieldAvailability(field) {
@@ -319,6 +359,13 @@ async function exchangeCodeForToken(code) {
   enableAutohideCheckbox.addEventListener('change', () => {
     syncAutohideDependents();
     updateOverlayUrl();
+
+    if (enableAutohideCheckbox.checked) {
+      startPreviewLoop();
+    } else {
+      stopPreviewLoop();
+      previewSongEl.classList.add('is-visible');
+    }
   });
 
   scrollFields.forEach(field => {
