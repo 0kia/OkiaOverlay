@@ -58,6 +58,15 @@ trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
 songEl.classList.add('transition-' + transitionStyle);
 
+// Force a reflow here so the browser fully commits the starting
+// opacity:0/pre-transition state as a real rendered frame before anything
+// else happens. Without this, on the very first load some browser engines
+// (notably CEF, which OBS's Browser Source uses) can bundle the transition
+// class and the first opacity change into the same initial paint, skipping
+// the animation entirely — every change after that works fine because a
+// real "opacity:0" frame has definitely been rendered by then.
+void songEl.offsetWidth;
+
 let hideTimer = null;
 let currentTrackId = null;
 

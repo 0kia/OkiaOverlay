@@ -312,7 +312,7 @@ async function exchangeCodeForToken(code) {
   if (enableAutohideCheckbox.checked) {
     startPreviewLoop();
   } else {
-    previewSongEl.classList.add('is-visible');
+    replayPreviewEntrance();
   }
 
   updateOverlayUrl();
@@ -364,7 +364,7 @@ async function exchangeCodeForToken(code) {
       startPreviewLoop();
     } else {
       stopPreviewLoop();
-      previewSongEl.classList.add('is-visible');
+      replayPreviewEntrance();
     }
   });
 
