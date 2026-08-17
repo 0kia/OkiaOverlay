@@ -351,8 +351,21 @@ async function exchangeCodeForToken(code) {
   syncAutohideDependents();
 
   // Every simple option just needs to regenerate the link on change/input.
-  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, transitionStyleSelect]
+  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
+
+  transitionStyleSelect.addEventListener('change', () => {
+    updateOverlayUrl();
+
+    // Force the newly selected transition to actually play immediately,
+    // instead of sitting inert until the next scheduled autohide cycle.
+    if (enableAutohideCheckbox.checked) {
+      stopPreviewLoop();
+      startPreviewLoop();
+    } else {
+      replayPreviewEntrance();
+    }
+  });
 
   autohideDurationInput.addEventListener('input', updateOverlayUrl);
 
