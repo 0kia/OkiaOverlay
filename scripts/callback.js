@@ -273,8 +273,18 @@ async function exchangeCodeForToken(code) {
 
   function replayPreviewEntrance() {
     previewSongEl.classList.remove('is-visible');
-    void previewSongEl.offsetWidth; // force reflow so the transition restarts even if it's already showing
-    previewSongEl.classList.add('is-visible');
+
+    // Double rAF instead of a forced-reflow (offsetWidth) read: rAF
+    // callbacks run right before the browser paints, so nesting two
+    // guarantees an actual painted frame with is-visible removed happens
+    // before it gets added back — a plain reflow read only guarantees a
+    // layout recalculation, not a paint, which in some cases isn't enough
+    // to make the browser treat this as a genuine transition restart.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        previewSongEl.classList.add('is-visible');
+      });
+    });
   }
 
   function runPreviewCycle() {
@@ -309,13 +319,13 @@ async function exchangeCodeForToken(code) {
   optionsPanel.classList.remove('hidden');
   previewSection.classList.remove('hidden');
 
+  updateOverlayUrl();
+
   if (enableAutohideCheckbox.checked) {
     startPreviewLoop();
   } else {
     replayPreviewEntrance();
   }
-
-  updateOverlayUrl();
 
   previewReplayButton.addEventListener('click', () => {
     if (enableAutohideCheckbox.checked) {
