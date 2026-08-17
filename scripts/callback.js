@@ -272,14 +272,18 @@ async function exchangeCodeForToken(code) {
   }
 
   function replayPreviewEntrance() {
+    // Temporarily disable the transition so removing is-visible snaps
+    // instantly to the fully hidden state, instead of starting an
+    // interruptible exit animation that we then only let run for ~1 frame
+    // — that was the cause of the tiny/incomplete bounce: the entrance was
+    // animating from wherever the exit transition had gotten to after 32ms,
+    // not from the true starting position.
+    previewSongEl.style.transition = 'none';
     previewSongEl.classList.remove('is-visible');
+    void previewSongEl.offsetWidth; // commit the instant jump to the hidden state
 
-    // Double rAF instead of a forced-reflow (offsetWidth) read: rAF
-    // callbacks run right before the browser paints, so nesting two
-    // guarantees an actual painted frame with is-visible removed happens
-    // before it gets added back — a plain reflow read only guarantees a
-    // layout recalculation, not a paint, which in some cases isn't enough
-    // to make the browser treat this as a genuine transition restart.
+    previewSongEl.style.transition = ''; // hand control back to the CSS class's transition
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         previewSongEl.classList.add('is-visible');
