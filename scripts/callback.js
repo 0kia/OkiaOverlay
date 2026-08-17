@@ -302,6 +302,13 @@ async function exchangeCodeForToken(code) {
     const durationValue = parseFloat(autohideDurationInput.value);
     const visibleDuration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
 
+    // Restart the shuttle scroll fresh for this cycle, exactly like a real
+    // track change does in overlay.js when autohide is on — otherwise the
+    // scroll animation just keeps looping continuously on its own timeline,
+    // independent of the show/hide cycle, and drifts out of sync with it.
+    previewScroll.setupShuttle(previewArtistEl, { duration: visibleDuration });
+    previewScroll.setupShuttle(previewTrackEl, { duration: visibleDuration });
+
     previewLoopTimer = setTimeout(() => {
       previewSongEl.classList.remove('is-visible');
 
