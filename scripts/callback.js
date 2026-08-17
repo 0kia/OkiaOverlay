@@ -388,7 +388,20 @@ async function exchangeCodeForToken(code) {
     }
   });
 
-  autohideDurationInput.addEventListener('input', updateOverlayUrl);
+  autohideDurationInput.addEventListener('input', () => {
+    updateOverlayUrl();
+
+    // Same reasoning as the transition dropdown: without this, the shuttle
+    // animation picks up the new duration immediately, but the loop's
+    // already-scheduled hide timer keeps running on the old duration,
+    // leaving the two misaligned until the current cycle finishes.
+    if (enableAutohideCheckbox.checked) {
+      stopPreviewLoop();
+      startPreviewLoop();
+    } else {
+      replayPreviewEntrance();
+    }
+  });
 
   enableAutohideCheckbox.addEventListener('change', () => {
     syncAutohideDependents();
