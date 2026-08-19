@@ -100,6 +100,8 @@ const durationOption = document.getElementById('duration-option');
 // background color option
 const enableBgColorCheckbox = document.getElementById('enable-bg-color');
 const bgColorPicker = document.getElementById('bg-color-picker');
+const borderRadiusInput = document.getElementById('border-radius');
+const borderRadiusOption = document.getElementById('border-radius-option');
 // text area width option
 const textWidthInput = document.getElementById('text-width');
 // capitalize options
@@ -184,6 +186,11 @@ async function exchangeCodeForToken(code) {
 
     if (enableBgColorCheckbox.checked) {
       urlParams.bg_color = bgColorPicker.value;
+
+      const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
+      if (!isNaN(borderRadiusValue) && borderRadiusValue !== 10) {
+        urlParams.border_radius = borderRadiusValue;
+      }
     }
 
     const widthValue = parseInt(textWidthInput.value, 10);
@@ -237,6 +244,11 @@ async function exchangeCodeForToken(code) {
     const duration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
 
     previewSongEl.style.backgroundColor = enableBgColorCheckbox.checked ? bgColorPicker.value : 'transparent';
+
+    const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
+    previewSongEl.style.borderRadius = (enableBgColorCheckbox.checked && !isNaN(borderRadiusValue) && borderRadiusValue >= 0)
+      ? borderRadiusValue + 'px'
+      : '10px';
 
     if (!isNaN(widthValue) && widthValue > 0) {
       previewSongTextEl.style.width = widthValue + 'px';
@@ -379,7 +391,12 @@ async function exchangeCodeForToken(code) {
     scrollFields.forEach(syncScrollFieldAvailability);
   }
 
+  function syncBgColorDependents() {
+    borderRadiusOption.classList.toggle('hidden', !enableBgColorCheckbox.checked);
+  }
+
   syncAutohideDependents();
+  syncBgColorDependents();
 
   // Every simple option just needs to regenerate the link on change/input.
   [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox]
@@ -436,9 +453,11 @@ async function exchangeCodeForToken(code) {
 
   bgColorPicker.addEventListener('input', updateOverlayUrl);
   textWidthInput.addEventListener('input', updateOverlayUrl);
+  borderRadiusInput.addEventListener('input', updateOverlayUrl);
 
   enableBgColorCheckbox.addEventListener('change', () => {
     bgColorPicker.disabled = !enableBgColorCheckbox.checked;
+    syncBgColorDependents();
     updateOverlayUrl();
   });
 

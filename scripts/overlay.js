@@ -4,6 +4,7 @@ const CLIENT_ID = params.get('client_id');
 const showAlbumArt = params.get('album_art') !== 'false';
 const enableAutohide = params.get('autohide') !== 'false';
 const bgColor = params.get('bg_color'); // e.g. ?bg_color=%23121212 or ?bg_color=rgba(0,0,0,0.5)
+const customBorderRadius = parseInt(params.get('border_radius'), 10); // px, only meaningful alongside bg_color
 const customWidth = parseInt(params.get('width'), 10); // e.g. ?width=600 — width in px of the artist/title text area
 const capsArtist = params.get('caps_artist') === 'true';
 const capsTrack = params.get('caps_track') === 'true';
@@ -43,6 +44,10 @@ const trackEl = document.getElementById('track');
 
 if (bgColor) {
   songEl.style.backgroundColor = bgColor;
+}
+
+if (!isNaN(customBorderRadius) && customBorderRadius >= 0) {
+  songEl.style.borderRadius = customBorderRadius + 'px';
 }
 
 if (!isNaN(customWidth) && customWidth > 0) {
