@@ -271,7 +271,7 @@ async function exchangeCodeForToken(code) {
     previewLoopRunning = false;
   }
 
-  function replayPreviewEntrance() {
+  function replayPreviewEntrance(onHidden) {
     // Temporarily disable the transition so removing is-visible snaps
     // instantly to the fully hidden state, instead of starting an
     // interruptible exit animation that we then only let run for ~1 frame
@@ -283,6 +283,14 @@ async function exchangeCodeForToken(code) {
     void previewSongEl.offsetWidth; // commit the instant jump to the hidden state
 
     previewSongEl.style.transition = ''; // hand control back to the CSS class's transition
+
+    // Anything that needs to be fully set up before the reveal (e.g. the
+    // shuttle scroll's fresh animation-duration) runs here, synchronously,
+    // while the card is confirmed hidden — rather than as an independent
+    // rAF chain racing the reveal below with no guaranteed ordering.
+    if (typeof onHidden === 'function') {
+      onHidden();
+    }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -297,8 +305,6 @@ async function exchangeCodeForToken(code) {
       return;
     }
 
-    replayPreviewEntrance();
-
     const durationValue = parseFloat(autohideDurationInput.value);
     const visibleDuration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
 
@@ -306,8 +312,12 @@ async function exchangeCodeForToken(code) {
     // track change does in overlay.js when autohide is on — otherwise the
     // scroll animation just keeps looping continuously on its own timeline,
     // independent of the show/hide cycle, and drifts out of sync with it.
-    previewScroll.setupShuttle(previewArtistEl, { duration: visibleDuration });
-    previewScroll.setupShuttle(previewTrackEl, { duration: visibleDuration });
+    // Passed as the onHidden hook so it's guaranteed to finish setting up
+    // before the card is revealed, not racing the reveal independently.
+    replayPreviewEntrance(() => {
+      previewScroll.setupShuttle(previewArtistEl, { duration: visibleDuration });
+      previewScroll.setupShuttle(previewTrackEl, { duration: visibleDuration });
+    });
 
     previewLoopTimer = setTimeout(() => {
       previewSongEl.classList.remove('is-visible');
