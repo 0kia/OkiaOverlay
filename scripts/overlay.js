@@ -14,6 +14,22 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
   ? params.get('transition')
   : 'fade'; // ?transition=none|fade|bounce
 
+// Loaded on demand from Google Fonts rather than relying on whatever's
+// installed locally — system font availability varies a lot across
+// Windows/macOS/Linux, so this keeps the look identical everywhere.
+const FONT_OPTIONS = {
+  default: { family: null, googleParam: null },
+  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
+  poppins: { family: 'Poppins', googleParam: 'Poppins:wght@400;500;600;700' },
+  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
+  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' },
+  oswald: { family: 'Oswald', googleParam: 'Oswald:wght@400;500;600;700' }
+};
+const fontChoice = Object.prototype.hasOwnProperty.call(FONT_OPTIONS, params.get('font'))
+  ? params.get('font')
+  : 'default'; // ?font=montserrat|poppins|roboto|inter|bebas|oswald
+
 // Per-field scroll config. Each field (title/artist) is independently:
 // enabled or static, Shuttle (back-and-forth) or Continuous (one-way
 // ticker), and triggered Always or only when the text is too long to fit.
@@ -62,6 +78,15 @@ artistEl.classList.toggle('caps-text', capsArtist);
 trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
 songEl.classList.add('transition-' + transitionStyle);
+
+if (fontChoice !== 'default') {
+  const font = FONT_OPTIONS[fontChoice];
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
+  document.head.appendChild(fontLink);
+  songEl.style.fontFamily = `'${font.family}', sans-serif`;
+}
 
 // Force a reflow here so the browser fully commits the starting
 // opacity:0/pre-transition state as a real rendered frame before anything

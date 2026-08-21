@@ -12,6 +12,33 @@ const previewAlbumArtEl = document.getElementById('album-art');
 const previewArtistEl = document.getElementById('artist');
 const previewTrackEl = document.getElementById('track');
 
+// Mirrors the FONT_OPTIONS registry in overlay.js — kept here rather than
+// shared since they're separate scripts on separate pages.
+const FONT_OPTIONS = {
+  default: { family: null, googleParam: null },
+  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
+  poppins: { family: 'Poppins', googleParam: 'Poppins:wght@400;500;600;700' },
+  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
+  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' },
+  oswald: { family: 'Oswald', googleParam: 'Oswald:wght@400;500;600;700' }
+};
+
+const loadedPreviewFonts = new Set();
+
+function ensurePreviewFontLoaded(fontKey) {
+  if (fontKey === 'default' || loadedPreviewFonts.has(fontKey)) {
+    return;
+  }
+
+  const font = FONT_OPTIONS[fontKey];
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
+  document.head.appendChild(fontLink);
+  loadedPreviewFonts.add(fontKey);
+}
+
 // Mirrors overlay.js's resetScrolling/setupScrolling/setupContinuousScrolling/
 // applyScroll exactly, just operating on the preview's own elements — kept
 // here (rather than including overlay.js on this page) since overlay.js also
@@ -109,6 +136,8 @@ const capsArtistCheckbox = document.getElementById('caps-artist');
 const capsTrackCheckbox = document.getElementById('caps-track');
 // flip order option
 const flipOrderCheckbox = document.getElementById('flip-order');
+// font option
+const fontSelect = document.getElementById('font-select');
 
 // Title/artist scroll options: each is enable + Scroll Type (Shuttle/
 // Continuous) + Trigger (Song length/Always), and all of it is only usable
@@ -219,6 +248,10 @@ async function exchangeCodeForToken(code) {
       urlParams.flip = true;
     }
 
+    if (fontSelect.value !== 'default') {
+      urlParams.font = fontSelect.value;
+    }
+
     scrollFields.forEach(field => {
       urlParams[`${field.prefix}_scroll`] = field.enableCheckbox.checked;
 
@@ -264,6 +297,11 @@ async function exchangeCodeForToken(code) {
     previewTrackEl.classList.toggle('caps-text', capsTrackCheckbox.checked);
 
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
+
+    ensurePreviewFontLoaded(fontSelect.value);
+    previewSongEl.style.fontFamily = (fontSelect.value !== 'default')
+      ? `'${FONT_OPTIONS[fontSelect.value].family}', sans-serif`
+      : '';
 
     previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
     previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
@@ -399,7 +437,7 @@ async function exchangeCodeForToken(code) {
   syncBgColorDependents();
 
   // Every simple option just needs to regenerate the link on change/input.
-  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox]
+  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, fontSelect]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 
   transitionStyleSelect.addEventListener('change', () => {
