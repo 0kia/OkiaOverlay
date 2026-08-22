@@ -15,13 +15,13 @@ const previewTrackEl = document.getElementById('track');
 // Mirrors the FONT_OPTIONS registry in overlay.js — kept here rather than
 // shared since they're separate scripts on separate pages.
 const FONT_OPTIONS = {
-  default: { family: null, googleParam: null },
-  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
-  poppins: { family: 'Poppins', googleParam: 'Poppins:wght@400;500;600;700' },
-  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
-  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
-  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' },
-  oswald: { family: 'Oswald', googleParam: 'Oswald:wght@400;500;600;700' }
+  default: { family: null, googleParam: null, verticalNudge: 0 },
+  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700', verticalNudge: 0 },
+  poppins: { family: 'Poppins', googleParam: 'Poppins:wght@400;500;600;700', verticalNudge: 0 },
+  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700', verticalNudge: 0 },
+  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700', verticalNudge: 0 },
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue', verticalNudge: 2 },
+  oswald: { family: 'Oswald', googleParam: 'Oswald:wght@400;500;600;700', verticalNudge: 0 }
 };
 
 const loadedPreviewFonts = new Set();
@@ -299,8 +299,12 @@ async function exchangeCodeForToken(code) {
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
 
     ensurePreviewFontLoaded(fontSelect.value);
+    const selectedFont = FONT_OPTIONS[fontSelect.value];
     previewSongEl.style.fontFamily = (fontSelect.value !== 'default')
-      ? `'${FONT_OPTIONS[fontSelect.value].family}', sans-serif`
+      ? `'${selectedFont.family}', sans-serif`
+      : '';
+    previewSongTextEl.style.transform = selectedFont.verticalNudge
+      ? `translateY(${selectedFont.verticalNudge}px)`
       : '';
 
     previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
