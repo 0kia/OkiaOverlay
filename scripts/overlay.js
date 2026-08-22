@@ -17,17 +17,12 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
 // Loaded on demand from Google Fonts rather than relying on whatever's
 // installed locally — system font availability varies a lot across
 // Windows/macOS/Linux, so this keeps the look identical everywhere.
-// verticalNudge (px) compensates for each font's own glyph metrics (cap
-// height, ascent/descent) not lining up identically with the default font
-// even at the same line-height — tune by eye if a font still looks off.
 const FONT_OPTIONS = {
-  default: { family: null, googleParam: null, verticalNudge: 0 },
-  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700', verticalNudge: 0 },
-  poppins: { family: 'Poppins', googleParam: 'Poppins:wght@400;500;600;700', verticalNudge: 0 },
-  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700', verticalNudge: 0 },
-  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700', verticalNudge: 0 },
-  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue', verticalNudge: 2 },
-  oswald: { family: 'Oswald', googleParam: 'Oswald:wght@400;500;600;700', verticalNudge: 0 }
+  default: { family: null, googleParam: null },
+  montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
+  roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
+  inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' }
 };
 const fontChoice = Object.prototype.hasOwnProperty.call(FONT_OPTIONS, params.get('font'))
   ? params.get('font')
@@ -89,10 +84,6 @@ if (fontChoice !== 'default') {
   fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
   document.head.appendChild(fontLink);
   songEl.style.fontFamily = `'${font.family}', sans-serif`;
-
-  if (font.verticalNudge) {
-    songTextEl.style.transform = `translateY(${font.verticalNudge}px)`;
-  }
 }
 
 // Force a reflow here so the browser fully commits the starting
