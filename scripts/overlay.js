@@ -17,12 +17,15 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
 // Loaded on demand from Google Fonts rather than relying on whatever's
 // installed locally — system font availability varies a lot across
 // Windows/macOS/Linux, so this keeps the look identical everywhere.
+// Monocraft is the one exception: it's self-hosted (not on Google Fonts),
+// declared via @font-face in Overlay.css, so it has no googleParam.
 const FONT_OPTIONS = {
   default: { family: null, googleParam: null },
   montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
   roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
   inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
-  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' }
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' },
+  monocraft: { family: 'Monocraft', googleParam: null }
 };
 const fontChoice = Object.prototype.hasOwnProperty.call(FONT_OPTIONS, params.get('font'))
   ? params.get('font')
@@ -79,10 +82,14 @@ songEl.classList.add('transition-' + transitionStyle);
 
 if (fontChoice !== 'default') {
   const font = FONT_OPTIONS[fontChoice];
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
-  document.head.appendChild(fontLink);
+
+  if (font.googleParam) {
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
+    document.head.appendChild(fontLink);
+  }
+
   songEl.style.fontFamily = `'${font.family}', sans-serif`;
 }
 

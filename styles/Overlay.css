@@ -1,3 +1,21 @@
+/* Monocraft — self-hosted (not on Google Fonts). SIL OFL 1.1 licensed,
+   see styles/fonts/Monocraft-LICENSE.txt. https://github.com/IdreesInc/Monocraft */
+@font-face {
+  font-family: 'Monocraft';
+  src: url('fonts/Monocraft-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monocraft';
+  src: url('fonts/Monocraft-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 #song {
   display: flex;
   align-items: stretch;

@@ -13,13 +13,16 @@ const previewArtistEl = document.getElementById('artist');
 const previewTrackEl = document.getElementById('track');
 
 // Mirrors the FONT_OPTIONS registry in overlay.js — kept here rather than
-// shared since they're separate scripts on separate pages.
+// shared since they're separate scripts on separate pages. Monocraft needs
+// no on-demand loading here either, since callback.html already links
+// Overlay.css, which declares it via @font-face.
 const FONT_OPTIONS = {
   default: { family: null, googleParam: null },
   montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
   roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
   inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
-  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' }
+  bebas: { family: 'Bebas Neue', googleParam: 'Bebas+Neue' },
+  monocraft: { family: 'Monocraft', googleParam: null }
 };
 
 const loadedPreviewFonts = new Set();
@@ -30,6 +33,11 @@ function ensurePreviewFontLoaded(fontKey) {
   }
 
   const font = FONT_OPTIONS[fontKey];
+
+  if (!font.googleParam) {
+    return; // self-hosted font, nothing to fetch
+  }
+
   const fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
   fontLink.href = `https://fonts.googleapis.com/css2?family=${font.googleParam}&display=swap`;
@@ -296,7 +304,9 @@ async function exchangeCodeForToken(code) {
 
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
 
-    ensurePreviewFontLoaded(fontSelect.value);
+    if (fontSelect.value !== 'default' && FONT_OPTIONS[fontSelect.value].googleParam) {
+      ensurePreviewFontLoaded(fontSelect.value);
+    }
     const selectedFont = FONT_OPTIONS[fontSelect.value];
     previewSongEl.style.fontFamily = (fontSelect.value !== 'default')
       ? `'${selectedFont.family}', sans-serif`
