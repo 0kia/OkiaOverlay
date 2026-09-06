@@ -203,6 +203,9 @@ h1 {
 
 .option-row select {
   width: auto;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
