@@ -24,7 +24,7 @@
   color: white;
   font-family: sans-serif;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 0;
   background-color: transparent; /* overridden inline via ?bg_color= */
   opacity: 0;
   position: relative;
@@ -89,9 +89,14 @@
 
 #album-art {
   width: 100px;
-  height: 100px;
+  height: auto; /* stretched to fill via #song's align-items: stretch */
+  /* Cancels #song's padding on the top/left/bottom sides so the image
+     bleeds flush to the card's actual edges, lining up with the
+     background. #song's own overflow: hidden + border-radius then clips
+     these corners automatically to match, whatever that radius is set to
+     — no need to keep this in sync with #song's radius separately. */
+  margin: -10px 0 -10px -14px;
   object-fit: cover;
-  border-radius: 6px;
   flex-shrink: 0;
 }
 

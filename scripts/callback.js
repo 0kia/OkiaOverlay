@@ -254,7 +254,7 @@ async function exchangeCodeForToken(code) {
 
     if (enableArtistBgCheckbox.checked || enableBgColorCheckbox.checked) {
       const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
-      if (!isNaN(borderRadiusValue) && borderRadiusValue !== 10) {
+      if (!isNaN(borderRadiusValue) && borderRadiusValue !== 0) {
         urlParams.border_radius = borderRadiusValue;
       }
     }
@@ -338,7 +338,7 @@ async function exchangeCodeForToken(code) {
     const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
     previewSongEl.style.borderRadius = ((enableBgColorCheckbox.checked || enableArtistBgCheckbox.checked) && !isNaN(borderRadiusValue) && borderRadiusValue >= 0)
       ? borderRadiusValue + 'px'
-      : '10px';
+      : '0px';
 
     if (!isNaN(widthValue) && widthValue > 0) {
       previewSongTextEl.style.width = widthValue + 'px';
