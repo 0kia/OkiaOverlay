@@ -58,9 +58,10 @@
 
 #song.transition-bounce {
   /* --bounce-x/--bounce-y set the starting offset (JS sets these based on
-     the chosen "From" direction); default is the original bottom-in
-     behavior if neither is ever set. */
-  transform: translate(var(--bounce-x, 0px), var(--bounce-y, 24px));
+     the chosen "From" direction) as a percentage of #song's own size, so
+     it always starts fully clear of its own resting footprint regardless
+     of card size, rather than a fixed small px nudge. */
+  transform: translate(var(--bounce-x, 0%), var(--bounce-y, 100%));
   /* "back" easing overshoots slightly past the resting position before
      settling, which reads as a little bounce on both the way in and out. */
   transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);

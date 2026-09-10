@@ -18,10 +18,10 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
 // Only relevant when transitionStyle is 'bounce' — which edge it slides in
 // from. Bottom matches the original (pre-this-feature) bounce behavior.
 const BOUNCE_OFFSETS = {
-  bottom: { x: '0px', y: '24px' },
-  top: { x: '0px', y: '-24px' },
-  left: { x: '-24px', y: '0px' },
-  right: { x: '24px', y: '0px' }
+  bottom: { x: '0%', y: '100%' },
+  top: { x: '0%', y: '-100%' },
+  left: { x: '-100%', y: '0%' },
+  right: { x: '100%', y: '0%' }
 };
 const bounceFrom = Object.prototype.hasOwnProperty.call(BOUNCE_OFFSETS, params.get('bounce_from'))
   ? params.get('bounce_from')
