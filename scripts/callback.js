@@ -135,6 +135,8 @@ const enableBgColorCheckbox = document.getElementById('enable-bg-color');
 const bgColorPicker = document.getElementById('bg-color-picker');
 const borderRadiusInput = document.getElementById('border-radius');
 const borderRadiusOption = document.getElementById('border-radius-option');
+// artist background option (mutually exclusive with background color)
+const enableArtistBgCheckbox = document.getElementById('enable-artist-bg');
 // text area width option
 const textWidthInput = document.getElementById('text-width');
 // capitalize options
@@ -219,9 +221,13 @@ async function exchangeCodeForToken(code) {
       autohide: enableAutohideCheckbox.checked
     };
 
-    if (enableBgColorCheckbox.checked) {
+    if (enableArtistBgCheckbox.checked) {
+      urlParams.artist_bg = true;
+    } else if (enableBgColorCheckbox.checked) {
       urlParams.bg_color = bgColorPicker.value;
+    }
 
+    if (enableArtistBgCheckbox.checked || enableBgColorCheckbox.checked) {
       const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
       if (!isNaN(borderRadiusValue) && borderRadiusValue !== 10) {
         urlParams.border_radius = borderRadiusValue;
@@ -282,10 +288,22 @@ async function exchangeCodeForToken(code) {
     const durationValue = parseFloat(autohideDurationInput.value);
     const duration = (!isNaN(durationValue) && durationValue > 0) ? durationValue : 7;
 
-    previewSongEl.style.backgroundColor = enableBgColorCheckbox.checked ? bgColorPicker.value : 'transparent';
+    if (enableArtistBgCheckbox.checked) {
+      // No real Spotify connection here, so use a placeholder image to
+      // demonstrate the blur/darken effect rather than an actual artist photo.
+      previewSongEl.style.setProperty(
+        '--artist-bg-image',
+        'url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23333\'/%3E%3Ctext x=\'50\' y=\'63\' font-size=\'42\' text-anchor=\'middle\' fill=\'%23888\'%3E%E2%99%AA%3C/text%3E%3C/svg%3E")'
+      );
+      previewSongEl.classList.add('has-artist-bg');
+      previewSongEl.style.backgroundColor = 'transparent';
+    } else {
+      previewSongEl.classList.remove('has-artist-bg');
+      previewSongEl.style.backgroundColor = enableBgColorCheckbox.checked ? bgColorPicker.value : 'transparent';
+    }
 
     const borderRadiusValue = parseInt(borderRadiusInput.value, 10);
-    previewSongEl.style.borderRadius = (enableBgColorCheckbox.checked && !isNaN(borderRadiusValue) && borderRadiusValue >= 0)
+    previewSongEl.style.borderRadius = ((enableBgColorCheckbox.checked || enableArtistBgCheckbox.checked) && !isNaN(borderRadiusValue) && borderRadiusValue >= 0)
       ? borderRadiusValue + 'px'
       : '10px';
 
@@ -439,7 +457,16 @@ async function exchangeCodeForToken(code) {
   }
 
   function syncBgColorDependents() {
-    borderRadiusOption.classList.toggle('hidden', !enableBgColorCheckbox.checked);
+    borderRadiusOption.classList.toggle('hidden', !(enableBgColorCheckbox.checked || enableArtistBgCheckbox.checked));
+
+    // Mutually exclusive: artist background overrides a plain color, so
+    // there's no point offering both at once.
+    bgColorPicker.disabled = !enableBgColorCheckbox.checked || enableArtistBgCheckbox.checked;
+    enableBgColorCheckbox.disabled = enableArtistBgCheckbox.checked;
+    document.getElementById('bg-color-option').classList.toggle('option-row--disabled', enableArtistBgCheckbox.checked);
+
+    enableArtistBgCheckbox.disabled = enableBgColorCheckbox.checked;
+    document.getElementById('artist-bg-option').classList.toggle('option-row--disabled', enableBgColorCheckbox.checked);
   }
 
   syncAutohideDependents();
@@ -503,7 +530,11 @@ async function exchangeCodeForToken(code) {
   borderRadiusInput.addEventListener('input', updateOverlayUrl);
 
   enableBgColorCheckbox.addEventListener('change', () => {
-    bgColorPicker.disabled = !enableBgColorCheckbox.checked;
+    syncBgColorDependents();
+    updateOverlayUrl();
+  });
+
+  enableArtistBgCheckbox.addEventListener('change', () => {
     syncBgColorDependents();
     updateOverlayUrl();
   });

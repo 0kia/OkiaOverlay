@@ -27,6 +27,29 @@
   border-radius: 10px;
   background-color: transparent; /* overridden inline via ?bg_color= */
   opacity: 0;
+  position: relative;
+  overflow: hidden; /* clips the oversized blurred ::before below to the card's rounded shape */
+}
+
+/* Artist background: a blurred, darkened artist photo behind the content.
+   The blur/darken lives on an oversized ::before (bled past the edges so
+   blur doesn't leave a visible transparent fringe) rather than on #song
+   itself, so the actual text/album art stay crisp instead of blurring too. */
+#song.has-artist-bg::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), var(--artist-bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  z-index: 0;
+}
+
+#album-art,
+#song-text {
+  position: relative;
+  z-index: 1;
 }
 
 #song.transition-fade {

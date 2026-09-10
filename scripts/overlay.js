@@ -4,7 +4,8 @@ const CLIENT_ID = params.get('client_id');
 const showAlbumArt = params.get('album_art') !== 'false';
 const enableAutohide = params.get('autohide') !== 'false';
 const bgColor = params.get('bg_color'); // e.g. ?bg_color=%23121212 or ?bg_color=rgba(0,0,0,0.5)
-const customBorderRadius = parseInt(params.get('border_radius'), 10); // px, only meaningful alongside bg_color
+const artistBgEnabled = params.get('artist_bg') === 'true'; // uses a blurred artist photo instead of bg_color
+const customBorderRadius = parseInt(params.get('border_radius'), 10); // px, applies to either bg_color or artist_bg
 const customWidth = parseInt(params.get('width'), 10); // e.g. ?width=600 — width in px of the artist/title text area
 const capsArtist = params.get('caps_artist') === 'true';
 const capsTrack = params.get('caps_track') === 'true';
@@ -59,7 +60,7 @@ const albumArtEl = document.getElementById('album-art');
 const artistEl = document.getElementById('artist');
 const trackEl = document.getElementById('track');
 
-if (bgColor) {
+if (bgColor && !artistBgEnabled) {
   songEl.style.backgroundColor = bgColor;
 }
 
@@ -265,6 +266,45 @@ async function getValidToken() {
   return refreshAccessToken();
 }
 
+const artistImageCache = new Map(); // artistId -> image URL (or null if none found)
+
+async function getArtistImage(artistId, token) {
+  if (artistImageCache.has(artistId)) {
+    return artistImageCache.get(artistId);
+  }
+
+  let imageUrl = null;
+
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      imageUrl = data.images?.[0]?.url || null;
+    }
+  } catch (e) {
+    console.error('Artist image fetch error:', e);
+  }
+
+  artistImageCache.set(artistId, imageUrl);
+  return imageUrl;
+}
+
+async function applyArtistBackground(artistId, token) {
+  const imageUrl = await getArtistImage(artistId, token);
+
+  if (imageUrl) {
+    songEl.style.setProperty('--artist-bg-image', `url("${imageUrl}")`);
+    songEl.classList.add('has-artist-bg');
+  } else {
+    songEl.classList.remove('has-artist-bg');
+  }
+}
+
 async function updateSong() {
   const token = await getValidToken();
 
@@ -320,6 +360,10 @@ async function updateSong() {
         }
       } else {
         albumArtEl.style.display = 'none';
+      }
+
+      if (artistBgEnabled && data.item.artists?.[0]?.id) {
+        applyArtistBackground(data.item.artists[0].id, token);
       }
 
       applyScroll(artistEl, artistScrollEnabled, artistScrollType, artistTrigger);

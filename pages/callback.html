@@ -56,6 +56,13 @@
                         <span>Border radius (px)</span>
                         <input type="number" id="border-radius" value="10" min="0" max="100" step="1">
                     </label>
+                    <label id="artist-bg-option" class="option-row">
+                        <span>
+                            Artist background
+                            <span class="info-icon" tabindex="0" data-tooltip="Uses a blurred photo of the current artist as the background instead of a solid color. Overrides Background color when both are on." onclick="event.preventDefault()">?</span>
+                        </span>
+                        <input type="checkbox" id="enable-artist-bg">
+                    </label>
                     <label id="caps-artist-option" class="option-row">
                         <span>Capitalize artist</span>
                         <input type="checkbox" id="caps-artist">
