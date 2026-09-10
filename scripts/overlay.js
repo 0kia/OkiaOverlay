@@ -15,6 +15,18 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
   ? params.get('transition')
   : 'fade'; // ?transition=none|fade|bounce
 
+// Only relevant when transitionStyle is 'bounce' — which edge it slides in
+// from. Bottom matches the original (pre-this-feature) bounce behavior.
+const BOUNCE_OFFSETS = {
+  bottom: { x: '0px', y: '24px' },
+  top: { x: '0px', y: '-24px' },
+  left: { x: '-24px', y: '0px' },
+  right: { x: '24px', y: '0px' }
+};
+const bounceFrom = Object.prototype.hasOwnProperty.call(BOUNCE_OFFSETS, params.get('bounce_from'))
+  ? params.get('bounce_from')
+  : 'bottom'; // ?bounce_from=bottom|top|left|right
+
 // Loaded on demand from Google Fonts rather than relying on whatever's
 // installed locally — system font availability varies a lot across
 // Windows/macOS/Linux, so this keeps the look identical everywhere.
@@ -80,6 +92,12 @@ artistEl.classList.toggle('caps-text', capsArtist);
 trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
 songEl.classList.add('transition-' + transitionStyle);
+
+if (transitionStyle === 'bounce') {
+  const offset = BOUNCE_OFFSETS[bounceFrom];
+  songEl.style.setProperty('--bounce-x', offset.x);
+  songEl.style.setProperty('--bounce-y', offset.y);
+}
 
 if (fontChoice !== 'default') {
   const font = FONT_OPTIONS[fontChoice];

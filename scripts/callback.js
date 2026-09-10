@@ -16,6 +16,14 @@ const previewTrackEl = document.getElementById('track');
 // shared since they're separate scripts on separate pages. Monocraft needs
 // no on-demand loading here either, since callback.html already links
 // Overlay.css, which declares it via @font-face.
+// Mirrors BOUNCE_OFFSETS in overlay.js
+const BOUNCE_OFFSETS = {
+  bottom: { x: '0px', y: '24px' },
+  top: { x: '0px', y: '-24px' },
+  left: { x: '-24px', y: '0px' },
+  right: { x: '24px', y: '0px' }
+};
+
 const FONT_OPTIONS = {
   default: { family: null, googleParam: null },
   montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
@@ -127,6 +135,8 @@ const enableAutohideCheckbox = document.getElementById('enable-autohide');
 // transition style option (only usable while autohide is on)
 const transitionStyleSelect = document.getElementById('transition-style');
 const transitionOption = document.getElementById('transition-option');
+const bounceFromSelect = document.getElementById('bounce-from');
+const bounceFromOption = document.getElementById('bounce-from-option');
 // autohide duration option (only usable while autohide is on)
 const autohideDurationInput = document.getElementById('autohide-duration');
 const durationOption = document.getElementById('duration-option');
@@ -251,6 +261,10 @@ async function exchangeCodeForToken(code) {
       urlParams.transition = transitionStyleSelect.value;
     }
 
+    if (transitionStyleSelect.value === 'bounce' && bounceFromSelect.value !== 'bottom') {
+      urlParams.bounce_from = bounceFromSelect.value;
+    }
+
     const durationValue = parseFloat(autohideDurationInput.value);
     if (!isNaN(durationValue) && durationValue !== 7) {
       urlParams.autohide_duration = durationValue;
@@ -332,6 +346,12 @@ async function exchangeCodeForToken(code) {
 
     previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
     previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
+
+    if (transitionStyleSelect.value === 'bounce') {
+      const offset = BOUNCE_OFFSETS[bounceFromSelect.value];
+      previewSongEl.style.setProperty('--bounce-x', offset.x);
+      previewSongEl.style.setProperty('--bounce-y', offset.y);
+    }
 
     const autohideOn = enableAutohideCheckbox.checked;
 
@@ -454,6 +474,12 @@ async function exchangeCodeForToken(code) {
     transitionOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
     durationOption.classList.toggle('hidden', !enableAutohideCheckbox.checked);
     scrollFields.forEach(syncScrollFieldAvailability);
+    syncBounceFromVisibility();
+  }
+
+  function syncBounceFromVisibility() {
+    const visible = enableAutohideCheckbox.checked && transitionStyleSelect.value === 'bounce';
+    bounceFromOption.classList.toggle('hidden', !visible);
   }
 
   function syncBgColorDependents() {
@@ -477,10 +503,22 @@ async function exchangeCodeForToken(code) {
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
 
   transitionStyleSelect.addEventListener('change', () => {
+    syncBounceFromVisibility();
     updateOverlayUrl();
 
     // Force the newly selected transition to actually play immediately,
     // instead of sitting inert until the next scheduled autohide cycle.
+    if (enableAutohideCheckbox.checked) {
+      stopPreviewLoop();
+      startPreviewLoop();
+    } else {
+      replayPreviewEntrance();
+    }
+  });
+
+  bounceFromSelect.addEventListener('change', () => {
+    updateOverlayUrl();
+
     if (enableAutohideCheckbox.checked) {
       stopPreviewLoop();
       startPreviewLoop();

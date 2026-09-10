@@ -57,7 +57,10 @@
 }
 
 #song.transition-bounce {
-  transform: translateY(24px);
+  /* --bounce-x/--bounce-y set the starting offset (JS sets these based on
+     the chosen "From" direction); default is the original bottom-in
+     behavior if neither is ever set. */
+  transform: translate(var(--bounce-x, 0px), var(--bounce-y, 24px));
   /* "back" easing overshoots slightly past the resting position before
      settling, which reads as a little bounce on both the way in and out. */
   transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -72,7 +75,7 @@
 }
 
 #song.transition-bounce.is-visible {
-  transform: translateY(0);
+  transform: translate(0, 0);
 }
 
 #album-art {
