@@ -2,6 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const refreshToken = params.get('refresh_token');
 const CLIENT_ID = params.get('client_id');
 const showAlbumArt = params.get('album_art') !== 'false';
+const fullBleedArt = params.get('full_bleed_art') === 'true';
 const enableAutohide = params.get('autohide') !== 'false';
 const bgColor = params.get('bg_color'); // e.g. ?bg_color=%23121212 or ?bg_color=rgba(0,0,0,0.5)
 const artistBgEnabled = params.get('artist_bg') === 'true'; // uses a blurred artist photo instead of bg_color
@@ -18,10 +19,10 @@ const transitionStyle = validTransitions.includes(params.get('transition'))
 // Only relevant when transitionStyle is 'bounce' — which edge it slides in
 // from. Bottom matches the original (pre-this-feature) bounce behavior.
 const BOUNCE_OFFSETS = {
-  bottom: { x: '0%', y: '100%' },
-  top: { x: '0%', y: '-100%' },
-  left: { x: '-100%', y: '0%' },
-  right: { x: '100%', y: '0%' }
+  bottom: { x: '0', y: '100vh' },
+  top: { x: '0', y: '-100vh' },
+  left: { x: '-100vw', y: '0' },
+  right: { x: '100vw', y: '0' }
 };
 const bounceFrom = Object.prototype.hasOwnProperty.call(BOUNCE_OFFSETS, params.get('bounce_from'))
   ? params.get('bounce_from')
@@ -91,6 +92,7 @@ if (!isNaN(customWidth) && customWidth > 0) {
 artistEl.classList.toggle('caps-text', capsArtist);
 trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
+songEl.classList.toggle('full-bleed-art', fullBleedArt);
 songEl.classList.add('transition-' + transitionStyle);
 
 if (transitionStyle === 'bounce') {

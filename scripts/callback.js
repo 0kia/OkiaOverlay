@@ -18,10 +18,23 @@ const previewTrackEl = document.getElementById('track');
 // Overlay.css, which declares it via @font-face.
 // Mirrors BOUNCE_OFFSETS in overlay.js
 const BOUNCE_OFFSETS = {
-  bottom: { x: '0px', y: '24px' },
-  top: { x: '0px', y: '-24px' },
-  left: { x: '-24px', y: '0px' },
-  right: { x: '24px', y: '0px' }
+  bottom: { x: '0', y: '100vh' },
+  top: { x: '0', y: '-100vh' },
+  left: { x: '-100vw', y: '0' },
+  right: { x: '100vw', y: '0' }
+};
+
+// The real overlay page's viewport IS the OBS Browser Source, so vw/vh
+// correctly means "off the visible frame" there. On this settings page the
+// viewport is the whole browser window, not the small preview canvas — so
+// vw/vh here would send the card flying way outside that little box before
+// it's even visible. Use large-but-bounded px values scoped to the preview
+// canvas instead, just for a comparable "clearly off-frame" demo effect.
+const PREVIEW_BOUNCE_OFFSETS = {
+  bottom: { x: '0px', y: '260px' },
+  top: { x: '0px', y: '-260px' },
+  left: { x: '-500px', y: '0px' },
+  right: { x: '500px', y: '0px' }
 };
 
 const FONT_OPTIONS = {
@@ -130,6 +143,8 @@ const previewScroll = {
 
 // display album art option
 const showAlbumArtCheckbox = document.getElementById('show-album-art');
+const fullBleedArtCheckbox = document.getElementById('full-bleed-art');
+const fullBleedArtOption = document.getElementById('full-bleed-art-option');
 // auto-hide option
 const enableAutohideCheckbox = document.getElementById('enable-autohide');
 // transition style option (only usable while autohide is on)
@@ -274,6 +289,10 @@ async function exchangeCodeForToken(code) {
       urlParams.flip = true;
     }
 
+    if (showAlbumArtCheckbox.checked && fullBleedArtCheckbox.checked) {
+      urlParams.full_bleed_art = true;
+    }
+
     if (fontSelect.value !== 'default') {
       urlParams.font = fontSelect.value;
     }
@@ -335,6 +354,7 @@ async function exchangeCodeForToken(code) {
     previewTrackEl.classList.toggle('caps-text', capsTrackCheckbox.checked);
 
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
+    previewSongEl.classList.toggle('full-bleed-art', showAlbumArtCheckbox.checked && fullBleedArtCheckbox.checked);
 
     if (fontSelect.value !== 'default' && FONT_OPTIONS[fontSelect.value].googleParam) {
       ensurePreviewFontLoaded(fontSelect.value);
@@ -348,7 +368,7 @@ async function exchangeCodeForToken(code) {
     previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
 
     if (transitionStyleSelect.value === 'bounce') {
-      const offset = BOUNCE_OFFSETS[bounceFromSelect.value];
+      const offset = PREVIEW_BOUNCE_OFFSETS[bounceFromSelect.value];
       previewSongEl.style.setProperty('--bounce-x', offset.x);
       previewSongEl.style.setProperty('--bounce-y', offset.y);
     }
@@ -495,12 +515,22 @@ async function exchangeCodeForToken(code) {
     document.getElementById('artist-bg-option').classList.toggle('option-row--disabled', enableBgColorCheckbox.checked);
   }
 
+  function syncAlbumArtDependents() {
+    fullBleedArtOption.classList.toggle('hidden', !showAlbumArtCheckbox.checked);
+  }
+
   syncAutohideDependents();
   syncBgColorDependents();
+  syncAlbumArtDependents();
 
   // Every simple option just needs to regenerate the link on change/input.
-  [showAlbumArtCheckbox, capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, fontSelect]
+  [capsArtistCheckbox, capsTrackCheckbox, flipOrderCheckbox, fontSelect, fullBleedArtCheckbox]
     .forEach(el => el.addEventListener('change', updateOverlayUrl));
+
+  showAlbumArtCheckbox.addEventListener('change', () => {
+    syncAlbumArtDependents();
+    updateOverlayUrl();
+  });
 
   transitionStyleSelect.addEventListener('change', () => {
     syncBounceFromVisibility();

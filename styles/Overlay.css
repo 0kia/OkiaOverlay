@@ -95,6 +95,20 @@
   flex-shrink: 0;
 }
 
+/* Full-bleed album art: pulls the image out to #song's true edges via
+   negative margins that exactly cancel #song's own 10px/14px padding, then
+   stretches to the card's full height. #song's own overflow:hidden +
+   border-radius then clips it automatically to match whatever radius is
+   set — no separate rounding logic needed here, it just rides along with
+   the card's own shape. border-radius:0 hands rounding fully over to that
+   parent clip instead of the image's own (otherwise square) corners. */
+#song.full-bleed-art #album-art {
+  height: auto;
+  align-self: stretch;
+  margin: -10px 0 -10px -14px;
+  border-radius: 0;
+}
+
 #song-text {
   min-width: 0;
   width: 400px;
