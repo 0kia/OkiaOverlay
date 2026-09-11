@@ -93,14 +93,20 @@
   align-self: flex-start; /* explicit, so it doesn't inherit #song's align-items: stretch now that height is fixed again */
 }
 
-/* Full-bleed album art: pulls the image out to #song's true top-left
-   corner via negative margins that cancel #song's own 10px/14px padding on
-   just those two sides — stays a fixed square, top+left aligned, rather
-   than stretching to the card's full height. #song's own overflow:hidden
-   + border-radius then clips that corner automatically to match whatever
-   radius is set — no separate rounding logic needed here. */
+/* Full-bleed album art: pulls the image out to #song's true edges via
+   negative margins that cancel #song's own 10px/14px padding on the
+   top/bottom/left sides, then stretches to the card's full height. Width
+   is set to auto with aspect-ratio: 1/1 rather than staying fixed at the
+   base rule's 100px, so it's always a perfect square matching whatever
+   height it actually stretches to (which varies with content/padding),
+   not a 100px-wide rectangle. #song's own overflow:hidden + border-radius
+   then clips it automatically to match whatever radius is set. */
 #song.full-bleed-art #album-art {
-  margin: -10px 0 0 -14px;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  align-self: stretch;
+  margin: -10px 0 -10px -14px;
 }
 
 #song-text {
