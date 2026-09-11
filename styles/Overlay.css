@@ -63,16 +63,14 @@
      the card's own size instead (e.g. percentages) only clears its own
      footprint, which is usually still well inside the visible area. */
   transform: translate(var(--bounce-x, 0), var(--bounce-y, 100vh));
-  /* Opacity fades in MUCH faster than the slide travels — if both ran on
-     similar timing, the card would still be mostly transparent for the
-     entire time it's actually moving across the frame, so the motion is
-     basically invisible and it just reads as "fade in" near the very end
-     of the slide instead of an actual visible slide-in. Getting opacity to
-     1 quickly means it's fully visible while still travelling, so the
-     slide itself is what you actually see.
+  /* Opacity still fades faster than the slide travels, so the card is
+     visible for most of the slide instead of the motion being hidden
+     behind a slow fade — but not so fast it snaps to full opacity
+     instantly, since a touch of fade reads better and matches the exit.
      "back" easing on the transform overshoots slightly past the resting
-     position before settling, which is what reads as the bounce. */
-  transition: opacity 0.15s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+     position before settling (the bounce); 1.25 is a gentler overshoot
+     than the original 1.56. */
+  transition: opacity 0.3s ease, transform 0.6s cubic-bezier(0.34, 1.25, 0.64, 1);
 }
 
 #song.transition-none {
@@ -89,29 +87,20 @@
 
 #album-art {
   width: 100px;
-  height: auto; /* stretched to fill via #song's align-items: stretch */
-  /* Cancels #song's padding on the top/left/bottom sides so the image
-     bleeds flush to the card's actual edges, lining up with the
-     background. #song's own overflow: hidden + border-radius then clips
-     these corners automatically to match, whatever that radius is set to
-     — no need to keep this in sync with #song's radius separately. */
-  margin: -10px 0 -10px -14px;
+  height: 100px;
   object-fit: cover;
   flex-shrink: 0;
+  align-self: flex-start; /* explicit, so it doesn't inherit #song's align-items: stretch now that height is fixed again */
 }
 
-/* Full-bleed album art: pulls the image out to #song's true edges via
-   negative margins that exactly cancel #song's own 10px/14px padding, then
-   stretches to the card's full height. #song's own overflow:hidden +
-   border-radius then clips it automatically to match whatever radius is
-   set — no separate rounding logic needed here, it just rides along with
-   the card's own shape. border-radius:0 hands rounding fully over to that
-   parent clip instead of the image's own (otherwise square) corners. */
+/* Full-bleed album art: pulls the image out to #song's true top-left
+   corner via negative margins that cancel #song's own 10px/14px padding on
+   just those two sides — stays a fixed square, top+left aligned, rather
+   than stretching to the card's full height. #song's own overflow:hidden
+   + border-radius then clips that corner automatically to match whatever
+   radius is set — no separate rounding logic needed here. */
 #song.full-bleed-art #album-art {
-  height: auto;
-  align-self: stretch;
-  margin: -10px 0 -10px -14px;
-  border-radius: 0;
+  margin: -10px 0 0 -14px;
 }
 
 #song-text {
