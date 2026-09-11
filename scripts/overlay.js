@@ -93,6 +93,20 @@ artistEl.classList.toggle('caps-text', capsArtist);
 trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
 songEl.classList.toggle('full-bleed-art', fullBleedArt);
+
+if (fullBleedArt) {
+  // aspect-ratio: 1/1 in CSS doesn't reliably resolve here (a known rough
+  // edge with flexbox stretch + replaced elements like <img> across
+  // browsers), so set width to match the actual rendered height directly.
+  // ResizeObserver keeps it correct if that height ever changes for any
+  // reason (song-text content, custom width, etc. can all affect it).
+  new ResizeObserver(entries => {
+    const height = entries[0].contentRect.height;
+    if (height > 0) {
+      albumArtEl.style.width = height + 'px';
+    }
+  }).observe(albumArtEl);
+}
 songEl.classList.add('transition-' + transitionStyle);
 
 if (transitionStyle === 'bounce') {

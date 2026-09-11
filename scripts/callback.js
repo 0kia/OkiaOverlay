@@ -316,6 +316,8 @@ async function exchangeCodeForToken(code) {
     updatePreview();
   }
 
+  let albumArtSquareObserver = null;
+
   function updatePreview() {
     const widthValue = parseInt(textWidthInput.value, 10);
     const durationValue = parseFloat(autohideDurationInput.value);
@@ -354,7 +356,25 @@ async function exchangeCodeForToken(code) {
     previewTrackEl.classList.toggle('caps-text', capsTrackCheckbox.checked);
 
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
-    previewSongEl.classList.toggle('full-bleed-art', showAlbumArtCheckbox.checked && fullBleedArtCheckbox.checked);
+    const fullBleedActive = showAlbumArtCheckbox.checked && fullBleedArtCheckbox.checked;
+    previewSongEl.classList.toggle('full-bleed-art', fullBleedActive);
+
+    if (fullBleedActive && !albumArtSquareObserver) {
+      // Same reasoning as overlay.js: aspect-ratio: 1/1 doesn't reliably
+      // resolve with flexbox stretch + <img>, so sync width to the actual
+      // rendered height directly instead.
+      albumArtSquareObserver = new ResizeObserver(entries => {
+        const height = entries[0].contentRect.height;
+        if (height > 0) {
+          previewAlbumArtEl.style.width = height + 'px';
+        }
+      });
+      albumArtSquareObserver.observe(previewAlbumArtEl);
+    } else if (!fullBleedActive && albumArtSquareObserver) {
+      albumArtSquareObserver.disconnect();
+      albumArtSquareObserver = null;
+      previewAlbumArtEl.style.width = ''; // revert to the CSS default (100px) when bleed is off
+    }
 
     if (fontSelect.value !== 'default' && FONT_OPTIONS[fontSelect.value].googleParam) {
       ensurePreviewFontLoaded(fontSelect.value);
