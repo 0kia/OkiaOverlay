@@ -38,7 +38,7 @@
 
             <div id="options-panel" class="options-columns hidden">
                 <div class="options-panel">
-                    <h2 class="options-title">Visuals</h2>
+                    <h2 class="options-title">Layout</h2>
 
                     <label id="album-art-option" class="option-row">
                         <span>Show album art</span>
@@ -55,6 +55,15 @@
                         <span>Title on Top</span>
                         <input type="checkbox" id="flip-order">
                     </label>
+                    <label id="width-option" class="option-row">
+                        <span>Container width</span>
+                        <input type="number" id="text-width" value="400" min="100" max="2000" step="10">
+                    </label>
+                </div>
+
+                <div class="options-panel">
+                    <h2 class="options-title">Background</h2>
+
                     <label id="bg-color-option" class="option-row">
                         <span>Background color</span>
                         <span class="option-controls">
@@ -73,6 +82,11 @@
                         </span>
                         <input type="checkbox" id="enable-artist-bg">
                     </label>
+                </div>
+
+                <div class="options-panel">
+                    <h2 class="options-title">Text</h2>
+
                     <label id="caps-artist-option" class="option-row">
                         <span>Capitalize artist</span>
                         <input type="checkbox" id="caps-artist">
@@ -102,7 +116,7 @@
                 </div>
 
                 <div class="options-panel">
-                    <h2 class="options-title">Functionality</h2>
+                    <h2 class="options-title">Auto-hide</h2>
 
                     <label id="autohide-option" class="option-row">
                         <span>
@@ -132,6 +146,10 @@
                             <option value="right">Right</option>
                         </select>
                     </label>
+                </div>
+
+                <div class="options-panel">
+                    <h2 class="options-title">Scrolling</h2>
 
                     <label id="title-scroll-option" class="option-row">
                         <span>Title Scroll</span>
@@ -169,11 +187,6 @@
                             <option value="song_length" selected>Song length</option>
                             <option value="always">Always</option>
                         </select>
-                    </label>
-
-                    <label id="width-option" class="option-row">
-                        <span>Container width</span>
-                        <input type="number" id="text-width" value="400" min="100" max="2000" step="10">
                     </label>
                 </div>
             </div>

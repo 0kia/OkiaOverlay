@@ -59,6 +59,7 @@ h1 {
   align-self: center;
   width: fit-content;
   box-sizing: border-box;
+  overflow: hidden; /* keep the card contained during bounce transitions instead of spilling outside the box */
   /* Checkerboard pattern — a common way to indicate transparent regions,
      so it's visually obvious what's actually transparent vs. your chosen
      background color. */
@@ -80,6 +81,7 @@ h1 {
 .options-columns {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 16px;
 }
