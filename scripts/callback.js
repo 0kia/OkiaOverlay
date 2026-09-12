@@ -38,7 +38,6 @@ const PREVIEW_BOUNCE_OFFSETS = {
 };
 
 const FONT_OPTIONS = {
-  default: { family: null, googleParam: null },
   montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
   roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
   inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
@@ -49,7 +48,7 @@ const FONT_OPTIONS = {
 const loadedPreviewFonts = new Set();
 
 function ensurePreviewFontLoaded(fontKey) {
-  if (fontKey === 'default' || loadedPreviewFonts.has(fontKey)) {
+  if (fontKey === 'montserrat' || loadedPreviewFonts.has(fontKey)) {
     return;
   }
 
@@ -167,6 +166,9 @@ const textWidthInput = document.getElementById('text-width');
 // capitalize options
 const capsArtistCheckbox = document.getElementById('caps-artist');
 const capsTrackCheckbox = document.getElementById('caps-track');
+// text color options
+const artistColorPicker = document.getElementById('artist-color');
+const titleColorPicker = document.getElementById('title-color');
 // flip order option
 const flipOrderCheckbox = document.getElementById('flip-order');
 // font option
@@ -272,6 +274,14 @@ async function exchangeCodeForToken(code) {
       urlParams.caps_track = true;
     }
 
+    if (artistColorPicker.value !== '#b4b4b4') {
+      urlParams.artist_color = artistColorPicker.value;
+    }
+
+    if (titleColorPicker.value !== '#ffffff') {
+      urlParams.title_color = titleColorPicker.value;
+    }
+
     if (transitionStyleSelect.value !== 'fade') {
       urlParams.transition = transitionStyleSelect.value;
     }
@@ -293,7 +303,7 @@ async function exchangeCodeForToken(code) {
       urlParams.full_bleed_art = true;
     }
 
-    if (fontSelect.value !== 'default') {
+    if (fontSelect.value !== 'montserrat') {
       urlParams.font = fontSelect.value;
     }
 
@@ -355,6 +365,9 @@ async function exchangeCodeForToken(code) {
     previewArtistEl.classList.toggle('caps-text', capsArtistCheckbox.checked);
     previewTrackEl.classList.toggle('caps-text', capsTrackCheckbox.checked);
 
+    previewArtistEl.style.color = artistColorPicker.value;
+    previewTrackEl.style.color = titleColorPicker.value;
+
     previewSongTextEl.classList.toggle('song-flipped', flipOrderCheckbox.checked);
     const fullBleedActive = showAlbumArtCheckbox.checked && fullBleedArtCheckbox.checked;
     previewSongEl.classList.toggle('full-bleed-art', fullBleedActive);
@@ -376,13 +389,13 @@ async function exchangeCodeForToken(code) {
       previewAlbumArtEl.style.width = ''; // revert to the CSS default (100px) when bleed is off
     }
 
-    if (fontSelect.value !== 'default' && FONT_OPTIONS[fontSelect.value].googleParam) {
+    if (fontSelect.value !== 'montserrat' && FONT_OPTIONS[fontSelect.value].googleParam) {
       ensurePreviewFontLoaded(fontSelect.value);
     }
     const selectedFont = FONT_OPTIONS[fontSelect.value];
-    previewSongEl.style.fontFamily = (fontSelect.value !== 'default')
+    previewSongEl.style.fontFamily = (fontSelect.value !== 'montserrat')
       ? `'${selectedFont.family}', sans-serif`
-      : '';
+      : ''; // '' falls back to Overlay.css's own Montserrat baseline
 
     previewSongEl.classList.remove('transition-none', 'transition-fade', 'transition-bounce');
     previewSongEl.classList.add('transition-' + transitionStyleSelect.value);
@@ -614,6 +627,8 @@ async function exchangeCodeForToken(code) {
   });
 
   bgColorPicker.addEventListener('input', updateOverlayUrl);
+  artistColorPicker.addEventListener('input', updateOverlayUrl);
+  titleColorPicker.addEventListener('input', updateOverlayUrl);
   textWidthInput.addEventListener('input', updateOverlayUrl);
   borderRadiusInput.addEventListener('input', updateOverlayUrl);
 

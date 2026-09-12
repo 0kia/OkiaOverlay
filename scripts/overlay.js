@@ -9,6 +9,8 @@ const artistBgEnabled = params.get('artist_bg') === 'true'; // uses a blurred ar
 const customBorderRadius = parseInt(params.get('border_radius'), 10); // px, applies to either bg_color or artist_bg
 const customWidth = parseInt(params.get('width'), 10); // e.g. ?width=600 — width in px of the artist/title text area
 const capsArtist = params.get('caps_artist') === 'true';
+const artistColor = params.get('artist_color'); // e.g. ?artist_color=%23b4b4b4
+const titleColor = params.get('title_color'); // e.g. ?title_color=%23ffffff
 const capsTrack = params.get('caps_track') === 'true';
 const flipOrder = params.get('flip') === 'true'; // ?flip=true swaps the vertical order of artist/track
 const validTransitions = ['none', 'fade', 'bounce'];
@@ -34,7 +36,6 @@ const bounceFrom = Object.prototype.hasOwnProperty.call(BOUNCE_OFFSETS, params.g
 // Monocraft is the one exception: it's self-hosted (not on Google Fonts),
 // declared via @font-face in Overlay.css, so it has no googleParam.
 const FONT_OPTIONS = {
-  default: { family: null, googleParam: null },
   montserrat: { family: 'Montserrat', googleParam: 'Montserrat:wght@400;500;600;700' },
   roboto: { family: 'Roboto', googleParam: 'Roboto:wght@400;500;700' },
   inter: { family: 'Inter', googleParam: 'Inter:wght@400;500;600;700' },
@@ -43,7 +44,7 @@ const FONT_OPTIONS = {
 };
 const fontChoice = Object.prototype.hasOwnProperty.call(FONT_OPTIONS, params.get('font'))
   ? params.get('font')
-  : 'default'; // ?font=montserrat|poppins|roboto|inter|bebas|oswald
+  : 'montserrat'; // ?font=montserrat|roboto|inter|bebas|monocraft — Montserrat is the baseline, already loaded in <head>, so nothing further needs to happen for it below
 
 // Per-field scroll config. Each field (title/artist) is independently:
 // enabled or static, Shuttle (back-and-forth) or Continuous (one-way
@@ -90,6 +91,14 @@ if (!isNaN(customWidth) && customWidth > 0) {
 }
 
 artistEl.classList.toggle('caps-text', capsArtist);
+
+if (artistColor) {
+  artistEl.style.color = artistColor;
+}
+
+if (titleColor) {
+  trackEl.style.color = titleColor;
+}
 trackEl.classList.toggle('caps-text', capsTrack);
 songTextEl.classList.toggle('song-flipped', flipOrder);
 songEl.classList.toggle('full-bleed-art', fullBleedArt);
@@ -115,7 +124,7 @@ if (transitionStyle === 'bounce') {
   songEl.style.setProperty('--bounce-y', offset.y);
 }
 
-if (fontChoice !== 'default') {
+if (fontChoice !== 'montserrat') {
   const font = FONT_OPTIONS[fontChoice];
 
   if (font.googleParam) {

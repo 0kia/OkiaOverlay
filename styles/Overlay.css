@@ -22,7 +22,7 @@
   width: fit-content;
   max-width: 600px;
   color: white;
-  font-family: sans-serif;
+  font-family: 'Montserrat', sans-serif;
   padding: 10px 14px;
   border-radius: 0;
   background-color: transparent; /* overridden inline via ?bg_color= */

@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <title>okia's Overlay - Link</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="../styles/style.css">
         <link rel="stylesheet" href="../styles/Overlay.css">
     </head>
@@ -78,11 +81,18 @@
                         <span>Capitalize song title</span>
                         <input type="checkbox" id="caps-track">
                     </label>
+                    <label id="artist-color-option" class="option-row">
+                        <span>Artist color</span>
+                        <input type="color" id="artist-color" value="#b4b4b4">
+                    </label>
+                    <label id="title-color-option" class="option-row">
+                        <span>Title color</span>
+                        <input type="color" id="title-color" value="#ffffff">
+                    </label>
                     <label id="font-option" class="option-row">
                         <span>Font</span>
                         <select id="font-select">
-                            <option value="default" selected>Default</option>
-                            <option value="montserrat">Montserrat</option>
+                            <option value="montserrat" selected>Montserrat</option>
                             <option value="roboto">Roboto</option>
                             <option value="inter">Inter</option>
                             <option value="bebas">Bebas Neue</option>
